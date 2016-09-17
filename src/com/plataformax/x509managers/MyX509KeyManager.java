@@ -26,49 +26,40 @@ import javax.net.ssl.X509KeyManager;
  *
  * @author Mathias
  */
-public class MyX509KeyManager implements X509KeyManager{
-     
+public class MyX509KeyManager implements X509KeyManager {
+
     private final String SECURITY_FOLDER_PATH = ".\\nbproject\\private\\security\\";
-    
-     X509KeyManager pkixKeyManager;
-     KeyStore ks;
-     
-     
-     public MyX509KeyManager(String username, String password) throws KeyStoreException, IOException, 
-             NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-         // create a "default" JSSE X509TrustManager.
-         
-         ks = KeyStore.getInstance("JKS");
-         
-         
-         ks.load(new FileInputStream(SECURITY_FOLDER_PATH + username), password.toCharArray());
-         
 
-         KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
-         
-         kmf.init(ks, password.toCharArray());
-         
-         KeyManager kms [] = kmf.getKeyManagers();
+    X509KeyManager pkixKeyManager;
+    KeyStore ks;
 
-         /*
+    public MyX509KeyManager(String username, String password) throws KeyStoreException, IOException,
+            NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+        // create a "default" JSSE X509TrustManager.
+
+        ks = KeyStore.getInstance("JKS");
+
+        ks.load(new FileInputStream(SECURITY_FOLDER_PATH + username), password.toCharArray());
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
+
+        kmf.init(ks, password.toCharArray());
+
+        KeyManager kms[] = kmf.getKeyManagers();
+
+        /*
           * Iterate over the returned trust managers, looking
           * for an instance of X509TrustManager.  If found,
           * use that as the default trust manager.
-          */
-         for (int i = 0; i < kms.length; i++) {
-             
-             if (kms[i] instanceof X509KeyManager) {
-                 pkixKeyManager = (X509KeyManager) kms[i];
-                 return;
-             }
-         }
+         */
+        for (int i = 0; i < kms.length; i++) {
 
-         /*
-          * Find some other way to initialize, or else the
-          * constructor fails.
-          */
-     }
-     
+            if (kms[i] instanceof X509KeyManager) {
+                pkixKeyManager = (X509KeyManager) kms[i];
+                return;
+            }
+        }
+    }
 
     @Override
     public String[] getClientAliases(String string, Principal[] prncpls) {
@@ -100,17 +91,17 @@ public class MyX509KeyManager implements X509KeyManager{
         System.out.println("STRING: " + alias);
         return pkixKeyManager.getPrivateKey(alias);
     }
-    
-    public Certificate getCertificate(String alias) throws KeyStoreException{
+
+    public Certificate getCertificate(String alias) throws KeyStoreException {
         return ks.getCertificate(alias);
     }
-    
-    public String getCertificateSerialNumber(String alias) throws KeyStoreException{
+
+    public String getCertificateSerialNumber(String alias) throws KeyStoreException {
         X509Certificate certificate = (X509Certificate) ks.getCertificate(alias);
         return certificate.getSerialNumber().toString(16);
     }
-    
-    public boolean checkValidity(String alias) throws KeyStoreException{
+
+    public boolean checkValidity(String alias) throws KeyStoreException {
         Date date = ((X509Certificate) ks.getCertificate(alias)).getNotAfter();
         return date.after(new Date());
     }

@@ -18,6 +18,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -36,6 +37,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -54,9 +56,11 @@ import org.jivesoftware.smackx.jiveproperties.JivePropertiesManager;
  *
  * @author Mathias
  */
-public class TelaMensagem extends javax.swing.JFrame {
+public class ConversationPanel extends javax.swing.JFrame {
 
     private static final String ENTER_KEY = "ENTER";
+    private static final String TRANSFORMATION = "AES/CTR/PKCS5PADDING";
+    
     private KeyStroke keyStroke;
     private Certificate contactCert;
     private IvParameterSpec IV;
@@ -86,9 +90,8 @@ public class TelaMensagem extends javax.swing.JFrame {
      * @param config
      * @param contact
      * @param firstMessage
-     * @throws java.lang.Exception
      */
-    public TelaMensagem(Configuration config, String contact, boolean firstMessage) {
+    public ConversationPanel(Configuration config, String contact, boolean firstMessage) {
         this.config = config;
         this.fullContactName = contact;
         this.firstMessage = firstMessage;
@@ -98,7 +101,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         JivePropertiesManager.setJavaObjectEnabled(true);
     }
 
-    private TelaMensagem() {
+    private ConversationPanel() {
     }
 
     /**
@@ -194,7 +197,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         return config.checkContactCertValidity(contactAlias);
     }
 
-    /*private void setMensagensText(String text) {
+    /*private void setMessageText(String text) {
         
         StyledDocument document = campoMensagem2.getStyledDocument();
         
@@ -205,7 +208,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         try {
             document.insertString(document.getLength(), "\n" +getContactName() + ": ", style);
         } catch (BadLocationException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         StyleConstants.setForeground(style, Color.BLACK);
@@ -213,7 +216,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         try {
             document.insertString(document.getLength(), text, style);
         } catch (BadLocationException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         this.revalidate();
@@ -229,7 +232,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         try {
             document.insertString(document.getLength(), "\n" + user + ": ", style);
         } catch (BadLocationException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         StyleConstants.setForeground(style, Color.BLACK);
@@ -237,12 +240,12 @@ public class TelaMensagem extends javax.swing.JFrame {
         try {
             document.insertString(document.getLength(), text, style);
         } catch (BadLocationException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         this.revalidate();
     }*/
-    private void setMensagensText(String text) {
+    private void setMessageText(String text) {
         campoMensagem.setForeground(Color.blue);
         campoMensagem.setText(campoMensagem.getText() + "\n" + getContactName() + ": ");
         this.revalidate();
@@ -319,7 +322,8 @@ public class TelaMensagem extends javax.swing.JFrame {
         }
     }
 
-    private String SignData(String messageToSign) throws Exception {
+    private String SignData(String messageToSign) throws NoSuchAlgorithmException,
+            InvalidKeyException, SignatureException, Exception {
         Signature sig = Signature.getInstance("SHA256withRSA");
 
         //ATUALMENTE ESTOU TENDO QUE COLOCAR ESSE "1.0." NA FRENTE DO NOME
@@ -336,7 +340,7 @@ public class TelaMensagem extends javax.swing.JFrame {
     }
 
     private boolean verifySign(String messageSignature, String messageToCompare)
-            throws NoSuchAlgorithmException, InvalidKeyException, Exception {
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 
         Signature sig = Signature.getInstance("SHA256withRSA");
         sig.initVerify(contactCert);
@@ -348,46 +352,37 @@ public class TelaMensagem extends javax.swing.JFrame {
         return sig.verify(decodedSignature);
     }
 
-    private String decryptData(String messageEncrypted) {
+    private String decryptData(String messageEncrypted) throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 
-        try {
-            incrementBytesForIV();
-            setIV();
-            Cipher dec = Cipher.getInstance("AES/CTR/PKCS5PADDING");
-            dec.init(Cipher.DECRYPT_MODE, key, IV);
+        incrementBytesForIV();
+        setIV();
+        //Não é necessário o padding com CTR, mas estou colocando por capricho
+        Cipher dec = Cipher.getInstance(TRANSFORMATION);
+        dec.init(Cipher.DECRYPT_MODE, key, IV);
 
-            byte[] decodedMessage = Base64.decode(messageEncrypted);
-            byte[] decValue = dec.doFinal(decodedMessage);
-            String decryptedMessage = new String(decValue);
-            System.out.println("DESCRYPTED MESSAGE: ");
-            System.out.println(decryptedMessage);
+        byte[] decodedMessage = Base64.decode(messageEncrypted);
+        byte[] decValue = dec.doFinal(decodedMessage);
+        String decryptedMessage = new String(decValue);
+        System.out.println("DESCRYPTED MESSAGE: ");
+        System.out.println(decryptedMessage);
 
-            return decryptedMessage;
-
-        } catch (IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
+        return decryptedMessage;
     }
 
-    public String encryptData(String message) {
+    public String encryptData(String message) throws NoSuchAlgorithmException,
+            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException {
 
-        try {
-            incrementBytesForIV();
-            setIV();
+        incrementBytesForIV();
+        setIV();
 
-            Cipher enc = Cipher.getInstance("AES/CTR/PKCS5PADDING");
-            enc.init(Cipher.ENCRYPT_MODE, key, IV);
+        Cipher enc = Cipher.getInstance(TRANSFORMATION);
+        enc.init(Cipher.ENCRYPT_MODE, key, IV);
 
-            String encString = Base64.encodeToString(enc.doFinal(message.getBytes()));
-            System.out.println("ENCRYPTED STRING: " + encString);
-            return encString;
-
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        String encString = Base64.encodeToString(enc.doFinal(message.getBytes()));
+        System.out.println("ENCRYPTED STRING: " + encString);
+        return encString;
     }
 
     private void prepareSTSProtocol() {
@@ -403,7 +398,8 @@ public class TelaMensagem extends javax.swing.JFrame {
             ax = g.modPow(x, p);
 
         } catch (NoSuchAlgorithmException | InvalidParameterSpecException ex) {
-            Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(rootPane, ex.getMessage());
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -412,7 +408,7 @@ public class TelaMensagem extends javax.swing.JFrame {
         Chat newChat = chatmanager.createChat(fullContactName, new ChatMessageListener() {
             @Override
             public void processMessage(Chat chat, Message message) {
-                setMensagensText(message.toString());
+                setMessageText(message.toString());
             }
         });
         return newChat;
@@ -438,7 +434,7 @@ public class TelaMensagem extends javax.swing.JFrame {
                 JivePropertiesManager.addProperty(newMessage, "signature", signature);
                 newMessage.setBody(encryptedMessage);
             } catch (Exception ex) {
-                Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -446,6 +442,7 @@ public class TelaMensagem extends javax.swing.JFrame {
             newChat.sendMessage(newMessage);
             setOwnMessageText(message);
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
             System.out.println(e.getMessage());
         }
     }
@@ -458,6 +455,7 @@ public class TelaMensagem extends javax.swing.JFrame {
             newChat.sendMessage(message);
             //setMensagensText(message.getBody());
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(rootPane, e.getMessage());
             System.out.println(e.getMessage());
         }
     }
@@ -515,10 +513,13 @@ public class TelaMensagem extends javax.swing.JFrame {
         setSecretKey();
         setBytesForIV();
 
-        String decryptedData = decryptData(encryptedData);
-        System.out.println("DECRYPTED: " + decryptedData);
+        String decryptedData;
 
         try {
+            decryptedData = decryptData(encryptedData);
+
+            System.out.println("DECRYPTED: " + decryptedData);
+
             String concatAxAy = ax.toString().concat(ay.toString());
             Message newMessage = new Message();
 
@@ -556,22 +557,39 @@ public class TelaMensagem extends javax.swing.JFrame {
                 sendMessage(newMessage);
             }
 
-        } catch (InvalidKeyException ex) {
-            System.out.println(ex.getMessage());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Não foi possível decriptar a mensagem recebida.\n"
+                    + "O processo de negociação de chaves foi cancelado.");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyStoreException | IOException | CertificateException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro. Não foi possível adicionar o certificado do contato "
+                    + "na truststore ou houve um problema na verificação da validade do mesmo.\n"
+                    + "Verificar se o certificado está importado na truststore ou se a truststore existe.");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SignatureException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro ao tentar verificar a assinatura da concatenação "
+                    + " de ax e ay enviada pelo contato. Ou ao tentar assinar a concatenação de ax e ay");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(rootPane, "Erro ao tentar realizar a assinatura da da concatenação entre "
+                    + "ax e ay.");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     private void processThirdPhaseSTS(Message receivedMessage) {
         String encryptedConcat = JivePropertiesManager
                 .getProperty(receivedMessage, "EncrypedSignedConcat")
                 .toString();
-        String decryptedConcat = decryptData(encryptedConcat);
-        String concatAxAy = ax.toString().concat(ay.toString());
 
         try {
+            String decryptedConcat = decryptData(encryptedConcat);
+
+            String concatAxAy = ax.toString().concat(ay.toString());
+
             Message newMessage = new Message();
+
             contactCert = (X509Certificate) JivePropertiesManager
                     .getProperty(receivedMessage, "certificate");
             addRemoteUserCert((X509Certificate) contactCert);
@@ -584,7 +602,7 @@ public class TelaMensagem extends javax.swing.JFrame {
                     sendMessage(newMessage);
                 } else {
                     System.out.println("FECHOU NEGOCIAÇÃO");
-                    setMensagensText(firstReceivedMessage);
+                    setMessageText(firstReceivedMessage);
 
                     newMessage.setBody(firstReceivedMessage);
 
@@ -597,11 +615,20 @@ public class TelaMensagem extends javax.swing.JFrame {
                 JivePropertiesManager.addProperty(newMessage, "KeyExchangeState", -2);
                 sendMessage(newMessage);
             }
-
-        } catch (InvalidKeyException ex) {
-            System.out.println(ex.getMessage());
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException 
+                | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Não foi possível decriptar a mensagem recebida.\n"
+                    + "O processo de negociação de chaves foi cancelado.");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyStoreException | IOException | CertificateException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro. Não foi possível adicionar o certificado do contato "
+                    + "na truststore ou houve um problema na verificação da validade do mesmo.\n"
+                    + "Verificar se o certificado está importado na truststore ou se a truststore existe.");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SignatureException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro ao tentar verificar a assinatura da concatenação "
+                    + " de ax e ay enviada pelo contato. Ou ao tentar assinar a concatenação de ax e ay");
+            Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -612,12 +639,12 @@ public class TelaMensagem extends javax.swing.JFrame {
             switch (JivePropertiesManager
                     .getProperty(receivedMessage, "KeyExchangeState").toString()) {
                 case "-1":
-                    setMensagensText("Processo de negociação de chaves não completado."
+                    setMessageText("Processo de negociação de chaves não completado."
                             + "Conversação cancelada. Motivo: Assinatura inválida.");
                     firstMessage = true;
                     break;
                 case "-2":
-                    setMensagensText("Processo de negociaçãi de chaves não completado."
+                    setMessageText("Processo de negociaçãi de chaves não completado."
                             + "Conversação cancelada. Motivo: Certificado digital inválido.");
                     firstMessage = true;
                     break;
@@ -637,19 +664,19 @@ public class TelaMensagem extends javax.swing.JFrame {
 
             try {
                 if (verifySign(signature, receivedMessage.getBody())) {
-                    setMensagensText(decryptData(receivedMessage.getBody()));
+                    setMessageText(decryptData(receivedMessage.getBody()));
                 } else {
                     //VER O QUE FAZER COM A CONVERSA QUANDO A ASSINATURA DIGITAL É INVÁLIDA.
-                    setMensagensText("Assinatura inválida! Mensagem cancelada!");
+                    setMessageText("Assinatura inválida! Mensagem cancelada!");
                 }
             } catch (InvalidKeyException ex) {
-                Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
-                Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             //VER O QUE FAZER SE CHEGAR UMA MENSAGEM SEM ASSINATURA.
-            setMensagensText(receivedMessage.getBody());
+            setMessageText(receivedMessage.getBody());
         }
 
     }
@@ -672,7 +699,7 @@ public class TelaMensagem extends javax.swing.JFrame {
             xy = x.toString();
         }
 
-        TelaParametros tp = new TelaParametros(p.toString(), g.toString(),
+        ParametersPanel tp = new ParametersPanel(p.toString(), g.toString(),
                 xy, kSTS.toString(), Base64.encodeToString(key.getEncoded()),
                 Base64.encodeToString(IV.getIV()));
         tp.setVisible(true);
@@ -695,14 +722,16 @@ public class TelaMensagem extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaMensagem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ConversationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaMensagem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ConversationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaMensagem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ConversationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaMensagem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ConversationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
@@ -710,9 +739,9 @@ public class TelaMensagem extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new TelaMensagem().setVisible(true);
+                    new ConversationPanel().setVisible(true);
                 } catch (Exception ex) {
-                    Logger.getLogger(TelaMensagem.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ConversationPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });

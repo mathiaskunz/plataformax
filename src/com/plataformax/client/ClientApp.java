@@ -5,7 +5,7 @@
  */
 package com.plataformax.client;
 
-import com.plataformax.swingui.TelaLogin;
+import com.plataformax.swingui.LoginPanel;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +60,7 @@ public class ClientApp {
      * @throws java.security.cert.CertificateException
      */
     public static void main(String[] args) throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, Exception {
-        TelaLogin tl = new TelaLogin();
+        LoginPanel tl = new LoginPanel();
         tl.setVisible(true);
         tl.revalidate();
         

@@ -30,7 +30,7 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
  *
  * @author Mathias
  */
-public class TelaSenha extends javax.swing.JFrame {
+public class PasswordPanel extends javax.swing.JFrame {
 
     private final int REQUEST_SUCCESSS = 1;
     private static final String SECURITY_DIRECTORY_PATH = ".\\nbproject\\private\\security\\";
@@ -46,11 +46,11 @@ public class TelaSenha extends javax.swing.JFrame {
      *
      * @throws java.lang.Exception
      */
-    public TelaSenha() throws Exception {
+    public PasswordPanel() throws Exception {
         initComponents();
     }
 
-    public TelaSenha(String username) throws Exception {
+    public PasswordPanel(String username) throws Exception {
         this.username = username;
         this.config = new Configuration("device", "123456");
         initComponents();
@@ -239,9 +239,9 @@ public class TelaSenha extends javax.swing.JFrame {
                 config.registerUser(username, passwordField.getText());
                 System.out.println("USUÁRIO CRIADO COM SUCESSO");
             } catch (IOException ex) {
-                Logger.getLogger(TelaCriarConta.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(AccountCreationPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
-                Logger.getLogger(TelaSenha.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(PasswordPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             System.out.println("FALHA AO GERAR CERTIFICADO.");
@@ -286,7 +286,7 @@ public class TelaSenha extends javax.swing.JFrame {
             //config.registerUser("client21", "123456");
             System.out.println("CRIADO!");
         } catch (Exception ex) {
-            Logger.getLogger(TelaSenha.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PasswordPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -311,23 +311,24 @@ public class TelaSenha extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaSenha.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PasswordPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaSenha.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PasswordPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaSenha.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PasswordPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaSenha.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(PasswordPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new TelaSenha().setVisible(true);
+                    new PasswordPanel().setVisible(true);
                 } catch (Exception ex) {
-                    Logger.getLogger(TelaSenha.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PasswordPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });

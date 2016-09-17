@@ -5,7 +5,7 @@
  */
 package com.plataformax.swingui;
 
-import com.plataformax.swingui.TelaSenha;
+import com.plataformax.swingui.PasswordPanel;
 import java.awt.BorderLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +28,7 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
  *
  * @author Mathias
  */
-public class TelaCriarConta extends javax.swing.JFrame {
+public class AccountCreationPanel extends javax.swing.JFrame {
 
     private static final int REQUEST_SUCCESSS = 1;
     private final String SECURITY_DIRECTORY_PATH = ".\\nbproject\\private\\security\\";
@@ -37,7 +37,7 @@ public class TelaCriarConta extends javax.swing.JFrame {
     /**
      * Creates new form TelaCriarConta
      */
-    public TelaCriarConta() {
+    public AccountCreationPanel() {
         initComponents();
     }
 
@@ -210,13 +210,13 @@ public class TelaCriarConta extends javax.swing.JFrame {
         System.out.println(awnser);
 
         if (response.getStatus() == 200 && awnser == REQUEST_SUCCESSS) {
-            TelaSenha ts;
+            PasswordPanel ts;
             try {
-                ts = new TelaSenha(userName);
+                ts = new PasswordPanel(userName);
                 ts.setVisible(true);
                 this.dispose();
             } catch (Exception ex) {
-                Logger.getLogger(TelaCriarConta.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(AccountCreationPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             JOptionPane.showMessageDialog(rootPane, "Nome de usuário já existe. \nEscolha outro nome.");
@@ -260,20 +260,21 @@ public class TelaCriarConta extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaCriarConta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AccountCreationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaCriarConta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AccountCreationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaCriarConta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AccountCreationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaCriarConta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AccountCreationPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TelaCriarConta().setVisible(true);
+                new AccountCreationPanel().setVisible(true);
             }
         });
     }

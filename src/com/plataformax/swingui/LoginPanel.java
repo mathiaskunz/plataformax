@@ -46,7 +46,7 @@ import org.jivesoftware.smack.XMPPException;
  *
  * @author Mathias
  */
-public class TelaLogin extends javax.swing.JFrame {
+public class LoginPanel extends javax.swing.JFrame {
 
     private static final String ENTER_KEY = "ENTER";
     private final String SECURITY_DIRECTORY_PATH = ".\\nbproject\\private\\security\\";
@@ -58,7 +58,7 @@ public class TelaLogin extends javax.swing.JFrame {
      *
      * @throws java.lang.Exception
      */
-    public TelaLogin() throws Exception {
+    public LoginPanel() throws Exception {
         initComponents();
     }
 
@@ -171,7 +171,7 @@ public class TelaLogin extends javax.swing.JFrame {
 
 
     private void botaoLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoLoginActionPerformed
-        TelaPrincipal tp;
+        MainPanel tp;
         String username = campoUsuario.getText();
         String password = campoSenha.getText();
 
@@ -187,16 +187,18 @@ public class TelaLogin extends javax.swing.JFrame {
                     config = new Configuration(username, password);
 
                     try {
-                        tp = new TelaPrincipal(username, password, this.config);
+                        tp = new MainPanel(username, password, this.config);
                         tp.setVisible(true);
                         tp.revalidate();
                         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                     } catch (Exception ex) {
-                        Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
                         
                         System.out.println("ERRO AO CRIAR TELA PRINCIPAL");
                         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                     }
+
+                    //SE NÃO, TENTA RENOVAR O CERTIFICADO
 
                     //SE NÃO, TENTA RENOVAR O CERTIFICADO
                 } else {
@@ -242,7 +244,7 @@ public class TelaLogin extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(rootPane, "Erro ao tentar recuperar o número serial"
                                 + " do seu certificado, para renová-lo. Seu pedido será enviado, mas "
                                 + "será recusado.");
-                        Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                     final FileDataBodyPart filePart = new FileDataBodyPart("file",
@@ -273,7 +275,7 @@ public class TelaLogin extends javax.swing.JFrame {
                             JOptionPane.showMessageDialog(rootPane, "Erro ao tentar importar seu certificado renovado "
                                     + "para a sua KeyStore. Você pode tentar importá-lo manualmente");
                             System.out.println("FALHA AO RENOVAR CERTIFICADO");
-                            Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }else{
                         JOptionPane.showMessageDialog(rootPane, "Erro ao renovar seu certificado."
@@ -284,17 +286,17 @@ public class TelaLogin extends javax.swing.JFrame {
             } catch (KeyStoreException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Erro ao verificar a válidade do seu certificado.");
             } catch (KeyManagementException ex) {
-                Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SmackException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Erro ao conectar ao servidor. Servidor está demorando para responder"
                         + ". Favor tentar novamente mais tarde.");
                 ex.printStackTrace();
             } catch (IOException ex) {
-                Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (XMPPException ex) {
-                Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
-                Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_botaoLoginActionPerformed
@@ -332,7 +334,7 @@ public class TelaLogin extends javax.swing.JFrame {
 
 
     private void botaoCriarContaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoCriarContaActionPerformed
-        TelaCriarConta tcc = new TelaCriarConta();
+        AccountCreationPanel tcc = new AccountCreationPanel();
         tcc.setVisible(true);
     }//GEN-LAST:event_botaoCriarContaActionPerformed
 
@@ -353,23 +355,24 @@ public class TelaLogin extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new TelaLogin().setVisible(true);
+                    new LoginPanel().setVisible(true);
                 } catch (Exception ex) {
-                    Logger.getLogger(TelaLogin.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });

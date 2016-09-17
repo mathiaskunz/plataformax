@@ -33,6 +33,7 @@ import sun.security.x509.X500Name;
 public class TestKeyStore {
 
     static KeyStore ks;
+    
 
     /*public static void main(String args[]) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
         ks = KeyStore.getInstance("JKS");
@@ -55,7 +56,7 @@ public class TestKeyStore {
                 = new java.io.FileOutputStream(".\\nbproject\\private\\security\\newKeyStoreName2");
         ks.store(fos, "123456".toCharArray());
         fos.close();
-    }*/
+    }
 
     public static void main(String args[]) {
 
@@ -88,7 +89,7 @@ public class TestKeyStore {
         } catch (CertificateException ex) {
             Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+    }*/
 
     public void generateKeyPair(String username, String password) {
         String command = " -genkeypair "

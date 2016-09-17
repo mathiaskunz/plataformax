@@ -52,10 +52,10 @@ import org.jivesoftware.smackx.jiveproperties.JivePropertiesManager;
  *
  * @author Mathias
  */
-public final class TelaPrincipal extends javax.swing.JFrame {
+public final class MainPanel extends javax.swing.JFrame {
 
     private Configuration config;
-    private List<TelaMensagem> listTm;
+    private List<ConversationPanel> listTm;
     private Roster roster;
     private String username;
     private String password;
@@ -68,7 +68,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
      * @param config
      * @throws java.lang.Exception
      */
-    public TelaPrincipal(String username, String password, Configuration config) {
+    public MainPanel(String username, String password, Configuration config) {
         JivePropertiesManager.setJavaObjectEnabled(true);
         setTitle(username);
         this.config = config;
@@ -80,7 +80,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
         receiveMessage();
     }
 
-    private TelaPrincipal() {
+    private MainPanel() {
     }
 
     /**
@@ -187,7 +187,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
             //SE NÃO, CRIAR UMA NOVA TELA DE MENSAGEM E ADICIONA NA LISTA DE 
             //MENSAGENS EM ABERTO
             if (!containContact(contato)) {
-                TelaMensagem tm = new TelaMensagem(config, contato + "@note-mathias", true);
+                ConversationPanel tm = new ConversationPanel(config, contato + "@note-mathias", true);
                 listTm.add(tm);
             }
 
@@ -436,7 +436,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
                             //VERIFICA SE ESTÁ EM CONVERSA COM O OUTR USUÁRIO
                             //SE NÃO ESTIVER ENTRA NO IF
                             if (!containContact(contato)) {
-                                TelaMensagem tm = new TelaMensagem(config, contato + "@note-mathias", false);
+                                ConversationPanel tm = new ConversationPanel(config, contato + "@note-mathias", false);
                                 listTm.add(tm);
                             }
 
@@ -460,12 +460,12 @@ public final class TelaPrincipal extends javax.swing.JFrame {
             System.out.println("CERTIFICADO DO USUÁRIO NÃO ESCRITO NA PASTA");
             e.printStackTrace();
         } catch (CertificateEncodingException ex) {
-            Logger.getLogger(TelaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public int indexOfContact(String contato) {
-        for (TelaMensagem telaMensagem : listTm) {
+        for (ConversationPanel telaMensagem : listTm) {
             System.out.println("CONTATO: " + telaMensagem.getContactName());
             if (telaMensagem.getContactName().equals(contato)) {
                 return listTm.indexOf(telaMensagem);
@@ -477,7 +477,7 @@ public final class TelaPrincipal extends javax.swing.JFrame {
 
     public boolean containContact(String contato) {
 
-        for (TelaMensagem telaMensagem : listTm) {
+        for (ConversationPanel telaMensagem : listTm) {
             if (telaMensagem.getContactName().equals(contato)) {
                 return true;
             }
@@ -502,21 +502,22 @@ public final class TelaPrincipal extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MainPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MainPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MainPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(MainPanel.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new TelaPrincipal().setVisible(true);
+                new MainPanel().setVisible(true);
             }
         });
     }
