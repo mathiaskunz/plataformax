@@ -15,8 +15,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -24,6 +22,7 @@ import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.iqregister.AccountManager;
@@ -34,7 +33,7 @@ import org.jivesoftware.smackx.iqregister.AccountManager;
  */
 public final class Configuration {
 
-    private AbstractXMPPConnection connection;
+    private static AbstractXMPPConnection connection;
     private final TrustManager[] myTMs;
     private final KeyManager[] myKMs;
     private final SSLContext ctx;
@@ -59,14 +58,14 @@ public final class Configuration {
         System.out.println("CHEGOU AQUI");
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
                 .setServiceName("note-mathias")
-                .setHost("localhost")
+                .setHost("192.168.0.100")
                 .setPort(5222)
                 .setCustomSSLContext(ctx)
                 .setSendPresence(true)
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setCompressionEnabled(false)
                 .allowEmptyOrNullUsernames()
-                .setConnectTimeout(15000)
+                .setConnectTimeout(45000)
                 .build();
 
         this.connection = new XMPPTCPConnection(config);
@@ -154,7 +153,16 @@ public final class Configuration {
     }
 
     public AbstractXMPPConnection getConnection() {
-        return this.connection;
+        return Configuration.connection;
+    }
+    
+    public String getUser(){
+        return connection.getUser()
+                .substring(0, connection.getUser().indexOf("@"));
+    }
+    
+    public ChatManager getChatManager(){
+        return ChatManager.getInstanceFor(connection);
     }
 
 }

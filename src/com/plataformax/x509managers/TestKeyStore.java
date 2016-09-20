@@ -22,8 +22,8 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sun.security.pkcs10.PKCS10;
-import sun.security.tools.keytool.CertAndKeyGen;
+//import sun.security.pkcs10.PKCS10;
+//import sun.security.tools.keytool.CertAndKeyGen;
 import sun.security.x509.X500Name;
 
 /**
@@ -31,8 +31,10 @@ import sun.security.x509.X500Name;
  * @author Mathias
  */
 public class TestKeyStore {
-
-    static KeyStore ks;
+    
+    private static final String SECURITY_DIRECTORY_PATH = "nbproject/private/security/";
+    
+    private static KeyStore ks;
     
 
     /*public static void main(String args[]) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
@@ -98,26 +100,26 @@ public class TestKeyStore {
                 + " -dname CN=" + username + " "
                 + " -storetype JKS "
                 + " -keypass " + password + " "
-                + " -keystore .\\nbproject\\private\\security\\" + username + " "
+                + " -keystore " + SECURITY_DIRECTORY_PATH + username + " "
                 + " -storepass " + password;
         execute(command);
         genCertReq(username, password);
     }
 
     public void genCertReq(String username, String password) {
-        String command = "-keystore .\\nbproject\\private\\security\\" + username + " "
+        String command = "-keystore " + SECURITY_DIRECTORY_PATH + username + " "
                 + "-certreq "
                 + "-alias " + username + " "
                 + "-keyalg rsa "
-                + "-file .\\nbproject\\private\\security\\" + username + ".csr "
+                + "-file " + SECURITY_DIRECTORY_PATH + username + ".csr "
                 + "-storepass " + password;
         execute(command);
     }
 
     public void importCACert(String username, String password) {
-        String command = "-keystore .\\nbproject\\private\\security\\" + username + " "
+        String command = "-keystore " + SECURITY_DIRECTORY_PATH + username + " "
                 + "-import "
-                + "-file .\\nbproject\\private\\security\\ca-certificate.pem "
+                + "-file " + SECURITY_DIRECTORY_PATH + "ca-certificate.pem "
                 + "-alias thecaroot "
                 + "-storepass " + password + " "
                 + "-noprompt";
@@ -126,9 +128,9 @@ public class TestKeyStore {
 
     public void importCert(String username, String password) {
 
-        String command = "-keystore .\\nbproject\\private\\security\\" + username + " "
+        String command = "-keystore " + SECURITY_DIRECTORY_PATH + username + " "
                 + "-import "
-                + "-file .\\nbproject\\private\\security\\" + username + ".cer "
+                + "-file " + SECURITY_DIRECTORY_PATH + username + ".cer "
                 + "-alias " + username + " "
                 + "-storepass " + password + " "
                 + "-noprompt";
@@ -136,9 +138,9 @@ public class TestKeyStore {
     }
 
     public void createTrustStore(String username, String password) {
-        String command = "-keystore .\\nbproject\\private\\security\\" + username + "Trust "
+        String command = "-keystore " + SECURITY_DIRECTORY_PATH + username + "Trust "
                 + "-import "
-                + "-file .\\nbproject\\private\\security\\ca-certificate.pem "
+                + "-file " + SECURITY_DIRECTORY_PATH + "ca-certificate.pem "
                 + "-alias thecaroot "
                 + "-storepass " + password + " "
                 + "-noprompt";
@@ -147,9 +149,9 @@ public class TestKeyStore {
     }
 
     public void addTrustEntry(String username, String alias, String password) {
-        String command = "-keystore .\\nbproject\\private\\security\\" + username + "Trust "
+        String command = "-keystore " + SECURITY_DIRECTORY_PATH + username + "Trust "
                 + "-import "
-                + "-file .\\nbproject\\private\\security\\" + alias + ".cer "
+                + "-file " + SECURITY_DIRECTORY_PATH + alias + ".cer "
                 + "-alias " + alias + " "
                 + "-storepass " + password + " "
                 + "-noprompt";
