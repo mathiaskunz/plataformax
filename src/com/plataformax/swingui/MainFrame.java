@@ -6,7 +6,7 @@
 package com.plataformax.swingui;
 
 import com.plataformax.configuration.Configuration;
-import com.plataformax.x509managers.TestKeyStore;
+import com.plataformax.x509managers.DirectKeyStoreHandler;
 import java.io.File;
 import java.io.IOException;
 
@@ -232,7 +232,7 @@ public final class MainFrame extends javax.swing.JFrame {
                                     .getProperty(stanza, "certificate");
 
                             writeRemoteClientCert(certificate, alias);
-                            new TestKeyStore().addTrustEntry(username, alias, password);
+                            new DirectKeyStoreHandler().addTrustEntry(username, alias, password);
 
                             //INFORMA QUE ACEITA A INSCRICAO/PEDIDO DE AMIZADE
                             Presence newp = new Presence(Presence.Type.subscribed);

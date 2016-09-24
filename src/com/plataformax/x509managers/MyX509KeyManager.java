@@ -28,7 +28,7 @@ import javax.net.ssl.X509KeyManager;
  */
 public class MyX509KeyManager implements X509KeyManager {
 
-    private final String SECURITY_FOLDER_PATH = "nbproject/private/security/";
+    private final String SECURITY_FOLDER_PATH = "security/";
 
     X509KeyManager pkixKeyManager;
     KeyStore ks;

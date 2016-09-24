@@ -15,11 +15,13 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidParameterSpecException;
@@ -96,10 +98,12 @@ public class ConversationFrame extends javax.swing.JFrame {
         this.fullContactName = contact;
         this.firstMessage = firstMessage;
         this.user = config.getUser();
+        initComponents();
         JivePropertiesManager.setJavaObjectEnabled(true);
     }
 
     private ConversationFrame() {
+        initComponents();
     }
 
     /**
@@ -119,6 +123,7 @@ public class ConversationFrame extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         campoMensagem2 = new javax.swing.JTextPane();
         configurationParameterButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setTitle(fullContactName);
 
@@ -150,6 +155,13 @@ public class ConversationFrame extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("Ver Certificado");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -158,6 +170,8 @@ public class ConversationFrame extends javax.swing.JFrame {
             .addComponent(jScrollPane2)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(configurationParameterButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(botaoEnviar))
             .addComponent(jScrollPane3)
@@ -173,7 +187,8 @@ public class ConversationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botaoEnviar)
-                    .addComponent(configurationParameterButton)))
+                    .addComponent(configurationParameterButton)
+                    .addComponent(jButton1)))
         );
 
         pack();
@@ -704,6 +719,52 @@ public class ConversationFrame extends javax.swing.JFrame {
         tp.setVisible(true);
     }//GEN-LAST:event_configurationParameterButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String[] value = new String[5];
+        X509Certificate x509ContactCert = (X509Certificate) contactCert;
+        value[0] = Integer.toString(x509ContactCert.getVersion());
+        value[1] = x509ContactCert.getSerialNumber().toString();
+        value[2] = x509ContactCert.getSigAlgName();
+        value[3] = x509ContactCert.getSigAlgName().substring(0, 
+                x509ContactCert.getSigAlgName().indexOf("w"));
+        value[4] = x509ContactCert.getPublicKey().getAlgorithm();
+        try {
+            value[5] = getThumbPrint(x509ContactCert);
+        } catch (NoSuchAlgorithmException | CertificateEncodingException ex) {
+            value[5] = "Não foi possível calcular o FingerPrint desse certificado";
+        }
+        
+        CertificateFrame cf = new CertificateFrame(value);
+        cf.setVisible(true);
+        cf.revalidate();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private String getThumbPrint(X509Certificate cert) 
+        throws NoSuchAlgorithmException, CertificateEncodingException{
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        byte[] der = cert.getEncoded();
+        md.update(der);
+        byte[] digest = md.digest();
+        return hexify(digest);
+
+    }
+
+    private String hexify (byte bytes[]) {
+
+        char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', 
+                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+        StringBuffer buf = new StringBuffer(bytes.length * 2);
+
+        for (int i = 0; i < bytes.length; ++i) {
+            buf.append(hexDigits[(bytes[i] & 0xf0) >> 4]);
+            buf.append(hexDigits[bytes[i] & 0x0f]);
+        }
+
+        return buf.toString();
+    }
+    
+    
     /**
      * @param args the command line arguments
      */
@@ -756,6 +817,7 @@ public class ConversationFrame extends javax.swing.JFrame {
     private javax.swing.JTextArea campoMensagem;
     private javax.swing.JTextPane campoMensagem2;
     private javax.swing.JButton configurationParameterButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

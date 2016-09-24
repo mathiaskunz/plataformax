@@ -5,7 +5,6 @@
  */
 package com.plataformax.swingui;
 
-import com.plataformax.swingui.PasswordFrame;
 import java.awt.BorderLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,9 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 
 /**
  *
@@ -31,13 +28,19 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 public class AccountCreationFrame extends javax.swing.JFrame {
 
     private static final int REQUEST_SUCCESSS = 1;
-    private final String SECURITY_DIRECTORY_PATH = "nbproject/private/security/";
+    private final String SECURITY_DIRECTORY_PATH = "security/";
     private final String AC_WEB_ADDRESS = "https://localhost:9998/api/app/name/";
+    private String ip;
 
     /**
      * Creates new form TelaCriarConta
      */
-    public AccountCreationFrame() {
+    public AccountCreationFrame(String ip) {
+        initComponents();
+        this.ip = ip;
+    }
+
+    private AccountCreationFrame() {
         initComponents();
     }
 
@@ -60,9 +63,9 @@ public class AccountCreationFrame extends javax.swing.JFrame {
         descriptionField = new javax.swing.JTextArea();
         jLabel4 = new javax.swing.JLabel();
         createAccountButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         jLabel1.setText("INFORME OS DADOS ABAIXO");
 
@@ -80,13 +83,6 @@ public class AccountCreationFrame extends javax.swing.JFrame {
         createAccountButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createAccountButtonActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
             }
         });
 
@@ -110,12 +106,9 @@ public class AccountCreationFrame extends javax.swing.JFrame {
                             .addGroup(mainPanelLayout.createSequentialGroup()
                                 .addGap(31, 31, 31)
                                 .addComponent(jLabel1))
-                            .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                            .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 86, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGap(124, 124, 124)
@@ -135,17 +128,12 @@ public class AccountCreationFrame extends javax.swing.JFrame {
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
+                .addGap(18, 18, 18)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(mainPanelLayout.createSequentialGroup()
-                                .addGap(42, 42, 42)
-                                .addComponent(jLabel4))))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(46, 46, 46)
-                        .addComponent(jButton1)))
+                        .addGap(42, 42, 42)
+                        .addComponent(jLabel4)))
                 .addGap(18, 18, 18)
                 .addComponent(createAccountButton)
                 .addContainerGap(29, Short.MAX_VALUE))
@@ -186,13 +174,11 @@ public class AccountCreationFrame extends javax.swing.JFrame {
         clientConfig.register(MultiPartFeature.class);
 
         SslConfigurator sslConfig = SslConfigurator.newInstance()
-                .keyStoreFile(SECURITY_DIRECTORY_PATH + "device")
-                .keyPassword("123456")
                 .trustStoreFile(SECURITY_DIRECTORY_PATH + "deviceTrust")
                 .trustStorePassword("123456");
 
         SSLContext sslContext = sslConfig.createSSLContext();
-        Client client = ClientBuilder.newBuilder().sslContext(sslContext).build();
+        Client client = ClientBuilder.newBuilder().withConfig(clientConfig).sslContext(sslContext).build();
 
         String userName = userNameField.getText();
 
@@ -210,10 +196,10 @@ public class AccountCreationFrame extends javax.swing.JFrame {
         System.out.println(awnser);
 
         if (response.getStatus() == 200 && awnser == REQUEST_SUCCESSS) {
-            PasswordFrame ts;
+            PasswordFrame pf;
             try {
-                ts = new PasswordFrame(userName);
-                ts.setVisible(true);
+                pf = new PasswordFrame(userName, ip);
+                pf.setVisible(true);
                 this.dispose();
             } catch (Exception ex) {
                 Logger.getLogger(AccountCreationFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -222,26 +208,6 @@ public class AccountCreationFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(rootPane, "Nome de usuário já existe. \nEscolha outro nome.");
         }
     }//GEN-LAST:event_createAccountButtonActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        createPasswordFrame();
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void createPasswordFrame() {
-        informPasswordLabel = new javax.swing.JLabel(
-                "INFORME A SENHA DA SUA CHAVE/CHAVEIRO", SwingConstants.CENTER);
-        informPasswordLabel.setVisible(true);
-        mainPanel.removeAll();
-        mainPanel.add(informPasswordLabel);
-        mainPanel.add(new javax.swing.JButton("teste"));
-        mainPanel.revalidate();
-        mainPanel.repaint();
-        pack();
-        getContentPane().add(mainPanel, BorderLayout.CENTER);
-        getContentPane().add(informPasswordLabel, BorderLayout.SOUTH);
-        mainPanel.setVisible(true);
-        getContentPane().revalidate();
-    }
 
     /**
      * @param args the command line arguments
@@ -290,7 +256,6 @@ public class AccountCreationFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton createAccountButton;
     private javax.swing.JTextArea descriptionField;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

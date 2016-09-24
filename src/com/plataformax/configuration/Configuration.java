@@ -12,6 +12,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -39,9 +40,40 @@ public final class Configuration {
     private final SSLContext ctx;
     private final MyX509KeyManager myKM;
     private final MyX509TrustManager myTM;
-    private final String username;
+    private String username;
+    private final String ip;
+    
+    public Configuration(String ip) throws SmackException, IOException, XMPPException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException, UnrecoverableKeyException{
+        
+        this.ctx = SSLContext.getInstance("TLS");
+        this.myTM = new MyX509TrustManager("client7", "123456");
+        this.myKM = null;
+        this.myKMs = null;
+        this.myTMs = new TrustManager[]{this.myTM};
+        this.ip = ip;
+        doConnection();
+        
+        //System.out.println("CHEGOU AQUI");
+        /*ctx.init(myKMs, myTMs, null);
+        XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
+                .setServiceName("note-mathias")
+                .setHost(ip)
+                .setPort(5222)
+                .setSendPresence(true)
+                .setCustomSSLContext(ctx)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
+                .setCompressionEnabled(false)
+                .allowEmptyOrNullUsernames()
+                .setConnectTimeout(45000)
+                .build();
 
-    public Configuration(String username, String password) throws NoSuchAlgorithmException, 
+        this.connection = new XMPPTCPConnection(config);
+        this.connection.connect();
+        System.out.println("CONECTADO");*/
+        
+    }
+
+    public Configuration(String username, String password, String ip) throws NoSuchAlgorithmException, 
             KeyManagementException, SmackException, IOException, XMPPException, Exception {
         this.ctx = SSLContext.getInstance("TLS");
         this.myKM = new MyX509KeyManager(username, password);
@@ -49,6 +81,7 @@ public final class Configuration {
         this.myKMs = new KeyManager[]{this.myKM};
         this.myTMs = new TrustManager[]{this.myTM};
         this.username = username;
+        this.ip = ip;
         doConnection();
     }
 
@@ -58,7 +91,7 @@ public final class Configuration {
         System.out.println("CHEGOU AQUI");
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
                 .setServiceName("note-mathias")
-                .setHost("192.168.0.100")
+                .setHost(ip)
                 .setPort(5222)
                 .setCustomSSLContext(ctx)
                 .setSendPresence(true)
@@ -71,15 +104,17 @@ public final class Configuration {
         this.connection = new XMPPTCPConnection(config);
         this.connection.connect();
         System.out.println("CONECTADO");
-        doLogin();
-        System.out.println("LOGADO COM:" + this.connection.getUser());
-
+        
+        if (myKMs != null) {
+            doLogin();
+            System.out.println("LOGADO COM:" + this.connection.getUser());
+        }
     }
 
-    private void doLogin() throws XMPPException, SmackException, IOException {
+    public void doLogin() throws XMPPException, SmackException, IOException {
         this.connection.login();
     }
-
+    
     public X509Certificate getContactCertificate(String contact) throws Exception {
         X509Certificate[] certs = myTM.getAcceptedIssuers();
 

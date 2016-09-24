@@ -30,9 +30,9 @@ import sun.security.x509.X500Name;
  *
  * @author Mathias
  */
-public class TestKeyStore {
+public class DirectKeyStoreHandler {
     
-    private static final String SECURITY_DIRECTORY_PATH = "nbproject/private/security/";
+    private static final String SECURITY_DIRECTORY_PATH = "security/";
     
     private static KeyStore ks;
     
@@ -77,19 +77,19 @@ public class TestKeyStore {
             fos.close();
             
         } catch (KeyStoreException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnrecoverableKeyException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidKeyException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SignatureException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (CertificateException ex) {
-            Logger.getLogger(TestKeyStore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DirectKeyStoreHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }*/
 

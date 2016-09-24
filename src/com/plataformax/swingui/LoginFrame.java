@@ -7,7 +7,7 @@ package com.plataformax.swingui;
 
 import com.plataformax.configuration.Configuration;
 import com.plataformax.x509managers.MyX509KeyManager;
-import com.plataformax.x509managers.TestKeyStore;
+import com.plataformax.x509managers.DirectKeyStoreHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 
@@ -49,7 +49,7 @@ import org.jivesoftware.smack.XMPPException;
 public class LoginFrame extends javax.swing.JFrame {
 
     private static final String ENTER_KEY = "ENTER";
-    private final String SECURITY_DIRECTORY_PATH = "nbproject/private/security/";
+    private final String SECURITY_DIRECTORY_PATH = "security/";
     private Configuration config;
     private KeyStroke keyStroke;
 
@@ -71,6 +71,7 @@ public class LoginFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTextField1 = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         campoUsuario = new javax.swing.JTextField();
         campoSenha = new javax.swing.JTextField();
@@ -78,6 +79,9 @@ public class LoginFrame extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         botaoLogin = new javax.swing.JButton();
         botaoCriarConta = new javax.swing.JButton();
+        ipField = new javax.swing.JTextField();
+
+        jTextField1.setText("jTextField1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -108,11 +112,6 @@ public class LoginFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(132, 132, 132)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(campoUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                            .addComponent(campoSenha)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(174, 174, 174)
                         .addComponent(jLabel1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -122,13 +121,21 @@ public class LoginFrame extends javax.swing.JFrame {
                         .addGap(94, 94, 94)
                         .addComponent(botaoLogin)
                         .addGap(18, 18, 18)
-                        .addComponent(botaoCriarConta)))
+                        .addComponent(botaoCriarConta))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(132, 132, 132)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(campoUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .addComponent(campoSenha)
+                            .addComponent(ipField))))
                 .addContainerGap(114, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(54, 54, 54)
+                .addContainerGap()
+                .addComponent(ipField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(campoUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -184,7 +191,7 @@ public class LoginFrame extends javax.swing.JFrame {
                 //TESTA SE O CERTIFICADO DO CLIENTE TENTANDO LOGAR É VÁLIDO
                 if (checkOwnCertValidity(km, username)) {
 
-                    config = new Configuration(username, password);
+                    config = new Configuration(username, password, ipField.getText());
 
                     try {
                         tp = new MainFrame(username, password, this.config);
@@ -197,13 +204,6 @@ public class LoginFrame extends javax.swing.JFrame {
                         System.out.println("ERRO AO CRIAR TELA PRINCIPAL");
                         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                     }
-
-                    //SE NÃO, TENTA RENOVAR O CERTIFICADO
-
-                    //SE NÃO, TENTA RENOVAR O CERTIFICADO
-
-                    //SE NÃO, TENTA RENOVAR O CERTIFICADO
-
                     //SE NÃO, TENTA RENOVAR O CERTIFICADO
                 } else {
 
@@ -231,10 +231,11 @@ public class LoginFrame extends javax.swing.JFrame {
                             .trustStorePassword(password);
 
                     SSLContext sslContext = sslConfig.createSSLContext();
-                    Client client = ClientBuilder.newBuilder().sslContext(sslContext).build();
+                    Client client = ClientBuilder.newBuilder().withConfig(clientConfig)
+                            .sslContext(sslContext).build();
                     Response response;
 
-                    new TestKeyStore().genCertReq(username, password);
+                    new DirectKeyStoreHandler().genCertReq(username, password);
 
                     String serialNumber = null;
                     try {
@@ -271,7 +272,7 @@ public class LoginFrame extends javax.swing.JFrame {
                             multipart.close();
                             client.close();
 
-                            new TestKeyStore().importCert(username, password);
+                            new DirectKeyStoreHandler().importCert(username, password);
                             System.out.println("CERTIFICADO IMPORTADO COM SUCESSO");
                             JOptionPane.showMessageDialog(this, "ATENÇÃO: CERTIFICADO RENOVADO!");
                             botaoLogin.doClick();
@@ -285,7 +286,6 @@ public class LoginFrame extends javax.swing.JFrame {
                         JOptionPane.showMessageDialog(rootPane, "Erro ao renovar seu certificado."
                                 + "Não será possível fazer login até que seu certificado seja renovado.");
                     }
-
                 }
             } catch (KeyStoreException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Erro ao verificar a válidade do seu certificado.");
@@ -339,7 +339,7 @@ public class LoginFrame extends javax.swing.JFrame {
 
 
     private void botaoCriarContaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoCriarContaActionPerformed
-        AccountCreationFrame tcc = new AccountCreationFrame();
+        AccountCreationFrame tcc = new AccountCreationFrame(ipField.getText());
         tcc.setVisible(true);
     }//GEN-LAST:event_botaoCriarContaActionPerformed
 
@@ -390,8 +390,10 @@ public class LoginFrame extends javax.swing.JFrame {
     private javax.swing.JButton botaoLogin;
     private javax.swing.JTextField campoSenha;
     private javax.swing.JTextField campoUsuario;
+    private javax.swing.JTextField ipField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

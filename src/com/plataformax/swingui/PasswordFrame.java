@@ -6,7 +6,8 @@
 package com.plataformax.swingui;
 
 import com.plataformax.configuration.Configuration;
-import com.plataformax.x509managers.TestKeyStore;
+import com.plataformax.x509managers.DirectKeyStoreHandler;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -33,9 +34,9 @@ import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 public class PasswordFrame extends javax.swing.JFrame {
 
     private final int REQUEST_SUCCESSS = 1;
-    private static final String SECURITY_DIRECTORY_PATH = "nbproject/private/security/";
+    private static final String SECURITY_DIRECTORY_PATH = "security/";
     private static final String CA_CERTREQ_ADDRESS = "https://localhost:9998/api/app/csr";
-    private static final String CA_DOWNCERT_ADDRESS = "https://localhost:9998/api/app/down";
+    private static final String CA_DOWNCERT_ADDRESS = "https://localhost:9998/api/app/down/";
     private static final String CA_DOWNCACERT_ADDRESS = "https://localhost:9998/api/app/downcacert";
     
     private String username;
@@ -50,9 +51,9 @@ public class PasswordFrame extends javax.swing.JFrame {
         initComponents();
     }
 
-    public PasswordFrame(String username) throws Exception {
+    public PasswordFrame(String username, String ip) throws Exception {
         this.username = username;
-        this.config = new Configuration("device", "123456");
+        this.config = new Configuration(ip);
         initComponents();
     }
 
@@ -65,30 +66,33 @@ public class PasswordFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        passwordField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        continueButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        passwordField = new javax.swing.JTextField();
+        continueButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
+
+        jLabel1.setText("INFORME A SENHA DO SEU PAR DE CHAVES PÚBLICA-PRIVADA E CHAVEIRO");
+
+        jTextArea1.setEditable(false);
+        jTextArea1.setBackground(new java.awt.Color(235, 235, 235));
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jTextArea1.setText("Essa senha será utilizada para criar o seu\npar de chaves pública-privada e, a partir \nde agora, será utilizada para proteger o \nseu chaveiro. O chaveiro é o local onde \nfica guardado o seu par de chaves\npública-privada e certificado \ncorrespondente.\n");
+        jScrollPane2.setViewportView(jTextArea1);
+
+        jLabel2.setText("Senha:");
 
         passwordField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 passwordFieldActionPerformed(evt);
             }
         });
-
-        jLabel1.setText("INFORME A SENHA DA SUA CHAVE/CHAVEIRO");
-
-        jTextArea1.setEditable(false);
-        jTextArea1.setBackground(new java.awt.Color(235, 235, 235));
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Essa senha será utilizada para criar a\nsua chave e, a partir de agora, será\nutilizada para proteger o seu \nchaveiro. O chaveiro é o local onde \nficam guardadas todas as suas chaves \nprivadas e certificados correspondentes, \nregistrados para serem utilizados a partir\ndesse dispositivo.\n");
-        jScrollPane2.setViewportView(jTextArea1);
 
         continueButton.setText("Prosseguir");
         continueButton.addActionListener(new java.awt.event.ActionListener() {
@@ -97,52 +101,52 @@ public class PasswordFrame extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("Senha:");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(continueButton))
+                            .addComponent(jLabel2))))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(continueButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(38, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(continueButton)
-                        .addGap(50, 50, 50)
-                        .addComponent(jButton1))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(19, 19, 19))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(30, 30, 30)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(3, 3, 3)
-                .addComponent(jLabel2)
-                .addGap(1, 1, 1)
-                .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(continueButton)
-                    .addComponent(jButton1))
-                .addGap(5, 5, 5))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -175,13 +179,11 @@ public class PasswordFrame extends javax.swing.JFrame {
         clientConfig.register(MultiPartFeature.class);
 
         SslConfigurator sslConfig = SslConfigurator.newInstance()
-                .trustStoreFile(SECURITY_DIRECTORY_PATH + "device")
-                .trustStorePassword("123456")
-                .keyStoreFile(SECURITY_DIRECTORY_PATH + "device")
-                .keyPassword("123456");
+                .trustStoreFile(SECURITY_DIRECTORY_PATH + "deviceTrust")
+                .trustStorePassword("123456");
 
         SSLContext sslContext = sslConfig.createSSLContext();
-        Client client = ClientBuilder.newBuilder().sslContext(sslContext).build();
+        Client client = ClientBuilder.newBuilder().withConfig(clientConfig).sslContext(sslContext).build();
 
         Response response;
         Invocation.Builder invocationBuilder;
@@ -228,7 +230,7 @@ public class PasswordFrame extends javax.swing.JFrame {
                 multipart.close();
                 client.close();
 
-                TestKeyStore tks = new TestKeyStore();
+                DirectKeyStoreHandler tks = new DirectKeyStoreHandler();
                 tks.importCACert(username, password);
                 tks.importCert(username, password);
                 System.out.println("CERTIFICADO IMPORTADO COM SUCESSO");
@@ -238,6 +240,7 @@ public class PasswordFrame extends javax.swing.JFrame {
 
                 config.registerUser(username, passwordField.getText());
                 System.out.println("USUÁRIO CRIADO COM SUCESSO");
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             } catch (IOException ex) {
                 Logger.getLogger(AccountCreationFrame.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
@@ -276,22 +279,8 @@ public class PasswordFrame extends javax.swing.JFrame {
         }
     }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        try {
-            TestKeyStore tks = new TestKeyStore();
-
-            tks.createTrustStore("client24", "123654");
-            //config = new Configuration("device", "123456");
-            //config.registerUser("client21", "123456");
-            System.out.println("CRIADO!");
-        } catch (Exception ex) {
-            Logger.getLogger(PasswordFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void genKeyPair(String username, String password) {
-        new TestKeyStore().generateKeyPair(username, password);
+        new DirectKeyStoreHandler().generateKeyPair(username, password);
     }
 
     /**
@@ -338,9 +327,9 @@ public class PasswordFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton continueButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField passwordField;

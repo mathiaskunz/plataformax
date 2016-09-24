@@ -30,7 +30,7 @@ public class MyX509TrustManager implements X509TrustManager {
     private final String username;
     private final String password;
     
-    private final String SECURITY_FOLDER_PATH = "nbproject/private/security/";
+    private final String SECURITY_FOLDER_PATH = "security/";
 
     public MyX509TrustManager(String username, String password) throws KeyStoreException, IOException, 
             NoSuchAlgorithmException, CertificateException{
