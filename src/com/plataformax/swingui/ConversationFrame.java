@@ -25,6 +25,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidParameterSpecException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +55,7 @@ import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.stringencoder.Base64;
 import org.jivesoftware.smackx.jiveproperties.JivePropertiesManager;
+import sun.security.x509.X500Name;
 
 /**
  *
@@ -82,7 +85,7 @@ public class ConversationFrame extends javax.swing.JFrame {
     private String fullContactName;
     private SecretKey key;
 
-    private String user;
+   
     private String firstReceivedMessage;
     private boolean firstMessage;
 
@@ -97,7 +100,7 @@ public class ConversationFrame extends javax.swing.JFrame {
         this.config = config;
         this.fullContactName = contact;
         this.firstMessage = firstMessage;
-        this.user = config.getUser();
+        
         initComponents();
         JivePropertiesManager.setJavaObjectEnabled(true);
     }
@@ -123,7 +126,7 @@ public class ConversationFrame extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         campoMensagem2 = new javax.swing.JTextPane();
         configurationParameterButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        showCertificateButton = new javax.swing.JButton();
 
         setTitle(fullContactName);
 
@@ -155,10 +158,10 @@ public class ConversationFrame extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("Ver Certificado");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        showCertificateButton.setText("Ver Certificado");
+        showCertificateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                showCertificateButtonActionPerformed(evt);
             }
         });
 
@@ -171,7 +174,7 @@ public class ConversationFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(configurationParameterButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(showCertificateButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(botaoEnviar))
             .addComponent(jScrollPane3)
@@ -188,7 +191,7 @@ public class ConversationFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botaoEnviar)
                     .addComponent(configurationParameterButton)
-                    .addComponent(jButton1)))
+                    .addComponent(showCertificateButton)))
         );
 
         pack();
@@ -270,7 +273,7 @@ public class ConversationFrame extends javax.swing.JFrame {
 
     private void setOwnMessageText(String text) {
         campoMensagem.setForeground(Color.GREEN);
-        campoMensagem.setText(campoMensagem.getText() + "\n" + user + ": ");
+        campoMensagem.setText(campoMensagem.getText() + "\nVocê: ");
         this.revalidate();
         campoMensagem.setForeground(Color.BLACK);
         campoMensagem.setText(campoMensagem.getText() + "\n" + text);
@@ -684,8 +687,10 @@ public class ConversationFrame extends javax.swing.JFrame {
                     setMessageText("Assinatura inválida! Mensagem cancelada!");
                 }
             } catch (InvalidKeyException ex) {
+                JOptionPane.showMessageDialog(rootPane, ex.getMessage());
                 Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (Exception ex) {
+            } catch (NoSuchAlgorithmException | SignatureException | NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException ex) {
+                JOptionPane.showMessageDialog(rootPane, ex.getMessage());
                 Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
@@ -719,25 +724,49 @@ public class ConversationFrame extends javax.swing.JFrame {
         tp.setVisible(true);
     }//GEN-LAST:event_configurationParameterButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String[] value = new String[5];
+    private void showCertificateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCertificateButtonActionPerformed
+        String[] value = new String[7];
         X509Certificate x509ContactCert = (X509Certificate) contactCert;
+        String cert = x509ContactCert.getPublicKey().toString();
+        String cert2 = "(" + cert.substring(cert.indexOf(", ")+2, cert
+                .indexOf(" bits")) + ")";
+        
         value[0] = Integer.toString(x509ContactCert.getVersion());
         value[1] = x509ContactCert.getSerialNumber().toString();
         value[2] = x509ContactCert.getSigAlgName();
         value[3] = x509ContactCert.getSigAlgName().substring(0, 
                 x509ContactCert.getSigAlgName().indexOf("w"));
-        value[4] = x509ContactCert.getPublicKey().getAlgorithm();
+        value[4] = x509ContactCert.getPublicKey().getAlgorithm() + cert2;
+        value[5] = hexify (x509ContactCert.getPublicKey().getEncoded());
+        
         try {
-            value[5] = getThumbPrint(x509ContactCert);
+            value[6] = getThumbPrint(x509ContactCert);
         } catch (NoSuchAlgorithmException | CertificateEncodingException ex) {
+            ex.printStackTrace();
             value[5] = "Não foi possível calcular o FingerPrint desse certificado";
         }
         
-        CertificateFrame cf = new CertificateFrame(value);
+        String issuedTo = "";
+        String issuedBy = "";
+        
+        try {
+            issuedTo = new X500Name(x509ContactCert.getSubjectX500Principal().getName())
+                    .getCommonName();
+            issuedBy = new X500Name(x509ContactCert.getIssuerX500Principal().getName())
+                    .getCommonName();
+            
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(rootPane, ex.getMessage());
+            Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+        final DateFormat df = new SimpleDateFormat ("dd/MM/yyyy");
+        CertificateFrame cf = new CertificateFrame(issuedTo, issuedBy, 
+                df.format(x509ContactCert.getNotBefore()), 
+                df.format(x509ContactCert.getNotAfter()), value);
         cf.setVisible(true);
         cf.revalidate();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_showCertificateButtonActionPerformed
 
     private String getThumbPrint(X509Certificate cert) 
         throws NoSuchAlgorithmException, CertificateEncodingException{
@@ -751,7 +780,7 @@ public class ConversationFrame extends javax.swing.JFrame {
 
     private String hexify (byte bytes[]) {
 
-        char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', 
+        /*char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', 
                 '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
         StringBuffer buf = new StringBuffer(bytes.length * 2);
@@ -761,7 +790,14 @@ public class ConversationFrame extends javax.swing.JFrame {
             buf.append(hexDigits[bytes[i] & 0x0f]);
         }
 
-        return buf.toString();
+        return buf.toString();*/
+        
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X ", b));
+        }
+        
+        return sb.toString();
     }
     
     
@@ -817,9 +853,9 @@ public class ConversationFrame extends javax.swing.JFrame {
     private javax.swing.JTextArea campoMensagem;
     private javax.swing.JTextPane campoMensagem2;
     private javax.swing.JButton configurationParameterButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JButton showCertificateButton;
     // End of variables declaration//GEN-END:variables
 }

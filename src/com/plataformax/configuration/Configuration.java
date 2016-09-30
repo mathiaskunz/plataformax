@@ -8,14 +8,22 @@ package com.plataformax.configuration;
 import com.plataformax.x509managers.MyX509TrustManager;
 import com.plataformax.x509managers.MyX509KeyManager;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -27,6 +35,11 @@ import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.iqregister.AccountManager;
+import org.jivesoftware.smackx.search.ReportedData;
+import org.jivesoftware.smackx.search.ReportedData.Row;
+import org.jivesoftware.smackx.search.UserSearch;
+import org.jivesoftware.smackx.search.UserSearchManager;
+import org.jivesoftware.smackx.xdata.Form;
 
 /**
  *
@@ -42,9 +55,9 @@ public final class Configuration {
     private final MyX509TrustManager myTM;
     private String username;
     private final String ip;
-    
-    public Configuration(String ip) throws SmackException, IOException, XMPPException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException, UnrecoverableKeyException{
-        
+
+    public Configuration(String ip) throws SmackException, IOException, XMPPException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException, UnrecoverableKeyException {
+
         this.ctx = SSLContext.getInstance("TLS");
         this.myTM = new MyX509TrustManager("client7", "123456");
         this.myKM = null;
@@ -52,7 +65,7 @@ public final class Configuration {
         this.myTMs = new TrustManager[]{this.myTM};
         this.ip = ip;
         doConnection();
-        
+
         //System.out.println("CHEGOU AQUI");
         /*ctx.init(myKMs, myTMs, null);
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
@@ -70,10 +83,9 @@ public final class Configuration {
         this.connection = new XMPPTCPConnection(config);
         this.connection.connect();
         System.out.println("CONECTADO");*/
-        
     }
 
-    public Configuration(String username, String password, String ip) throws NoSuchAlgorithmException, 
+    public Configuration(String username, String password, String ip) throws NoSuchAlgorithmException,
             KeyManagementException, SmackException, IOException, XMPPException, Exception {
         this.ctx = SSLContext.getInstance("TLS");
         this.myKM = new MyX509KeyManager(username, password);
@@ -104,7 +116,7 @@ public final class Configuration {
         this.connection = new XMPPTCPConnection(config);
         this.connection.connect();
         System.out.println("CONECTADO");
-        
+
         if (myKMs != null) {
             doLogin();
             System.out.println("LOGADO COM:" + this.connection.getUser());
@@ -114,7 +126,7 @@ public final class Configuration {
     public void doLogin() throws XMPPException, SmackException, IOException {
         this.connection.login();
     }
-    
+
     public X509Certificate getContactCertificate(String contact) throws Exception {
         X509Certificate[] certs = myTM.getAcceptedIssuers();
 
@@ -143,36 +155,60 @@ public final class Configuration {
         this.myTM.deleteTrustEntry(alias);
     }
 
-   /* public List getContacts() {
-
-        List<String> listaContatos = new ArrayList<>();
-
-        X509Certificate[] certs = this.myTM.getAcceptedIssuers();
-
-        for (X509Certificate cert : certs) {
-            String dn = cert.getSubjectX500Principal().getName();
-            String cn;
-
-            if (dn.contains(",")) {
-                cn = dn.substring(3, dn.indexOf(","));
-            } else {
-                cn = dn.substring(3);
-            }
-
-            listaContatos.add(cn);
-        }
-
-        return listaContatos;
-    }*/
-
     public PrivateKey getPrivateKey() throws Exception {
         return this.myKM.getPrivateKey("1.0." + this.username);
     }
 
     public void registerUser(String username, String password) throws SmackException.NoResponseException,
-            XMPPException.XMPPErrorException, SmackException.NotConnectedException {
+            XMPPException.XMPPErrorException, SmackException.NotConnectedException, NoSuchAlgorithmException {
         AccountManager am = AccountManager.getInstance(this.connection);
-        am.createAccount(username, password);
+        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+        am.createAccount(username, new BigInteger(64, sr).toString());
+    }
+
+    public List<String> searchUser(String description) {
+        UserSearchManager manager = new UserSearchManager(connection);
+
+        Form searchForm;
+        List<String> clientsList = null;
+        try {
+            System.out.println("PROCURANDO");
+            String searchFormString = "search.note-mathias";
+            searchForm = manager.getSearchForm(searchFormString);
+
+            Form answerForm = searchForm.createAnswerForm();
+
+            UserSearch userSearch = new UserSearch();
+            answerForm.setAnswer("Username", true);
+            answerForm.setAnswer("Name", true);
+            answerForm.setAnswer("search", description);
+
+            ReportedData results = userSearch.sendSearchForm(connection, answerForm, searchFormString);
+            clientsList = new ArrayList<String>();
+            
+            if (results != null) {
+                List<Row> rows = results.getRows();
+                System.out.println(rows.isEmpty());
+                for (Row row : rows) {
+                    List<String> valueUser = row.getValues("Usuário");
+                    List<String> valueName = row.getValues("Nome");
+                    
+                    for (String user : valueUser) {
+                        for (String name : valueName) {
+                            clientsList.add(user + " | " + name);
+                        }
+                    }
+                }
+            } else {
+                System.out.println("No result found");
+            }
+
+        } catch (SmackException.NoResponseException | XMPPException.XMPPErrorException 
+                | SmackException.NotConnectedException ex) {
+            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return clientsList;
     }
 
     public boolean checkOwnCertValidity() throws KeyStoreException {
@@ -190,13 +226,13 @@ public final class Configuration {
     public AbstractXMPPConnection getConnection() {
         return Configuration.connection;
     }
-    
-    public String getUser(){
+
+    public String getUser() {
         return connection.getUser()
                 .substring(0, connection.getUser().indexOf("@"));
     }
-    
-    public ChatManager getChatManager(){
+
+    public ChatManager getChatManager() {
         return ChatManager.getInstanceFor(connection);
     }
 

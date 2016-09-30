@@ -60,15 +60,15 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="94" max="-2" attributes="0"/>
-                          <Component id="botaoLogin" min="-2" max="-2" attributes="0"/>
+                          <Component id="loginButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="botaoCriarConta" min="-2" max="-2" attributes="0"/>
+                          <Component id="createAccountButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="132" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="campoUsuario" pref="135" max="32767" attributes="0"/>
-                              <Component id="campoSenha" max="32767" attributes="0"/>
+                              <Component id="usernameField" pref="135" max="32767" attributes="0"/>
+                              <Component id="passwordField" max="32767" attributes="0"/>
                               <Component id="ipField" max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -85,15 +85,15 @@
                   <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="campoUsuario" min="-2" max="-2" attributes="0"/>
+                  <Component id="usernameField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                  <Component id="campoSenha" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="botaoLogin" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="botaoCriarConta" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="loginButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="createAccountButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="110" max="32767" attributes="0"/>
               </Group>
@@ -101,11 +101,11 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JTextField" name="campoUsuario">
+        <Component class="javax.swing.JTextField" name="usernameField">
         </Component>
-        <Component class="javax.swing.JTextField" name="campoSenha">
+        <Component class="javax.swing.JTextField" name="passwordField">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="keyStroke = KeyStroke.getKeyStroke(ENTER_KEY);&#xa;Object actionKey = campoSenha.getInputMap(&#xa;                JComponent.WHEN_FOCUSED).get(keyStroke);&#xa;campoSenha.getActionMap().put(actionKey, wrapper);"/>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="keyStroke = KeyStroke.getKeyStroke(ENTER_KEY);&#xa;Object actionKey = passwordField.getInputMap(&#xa;                JComponent.WHEN_FOCUSED).get(keyStroke);&#xa;passwordField.getActionMap().put(actionKey, wrapper);"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
@@ -118,20 +118,20 @@
             <Property name="text" type="java.lang.String" value="Senha"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="botaoLogin">
+        <Component class="javax.swing.JButton" name="loginButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Fazer Login"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="botaoLoginActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loginButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="botaoCriarConta">
+        <Component class="javax.swing.JButton" name="createAccountButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Criar Conta"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="botaoCriarContaActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createAccountButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="ipField">

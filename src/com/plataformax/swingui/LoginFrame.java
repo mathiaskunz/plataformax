@@ -73,12 +73,12 @@ public class LoginFrame extends javax.swing.JFrame {
 
         jTextField1 = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
-        campoUsuario = new javax.swing.JTextField();
-        campoSenha = new javax.swing.JTextField();
+        usernameField = new javax.swing.JTextField();
+        passwordField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        botaoLogin = new javax.swing.JButton();
-        botaoCriarConta = new javax.swing.JButton();
+        loginButton = new javax.swing.JButton();
+        createAccountButton = new javax.swing.JButton();
         ipField = new javax.swing.JTextField();
 
         jTextField1.setText("jTextField1");
@@ -91,17 +91,17 @@ public class LoginFrame extends javax.swing.JFrame {
 
         jLabel2.setText("Senha");
 
-        botaoLogin.setText("Fazer Login");
-        botaoLogin.addActionListener(new java.awt.event.ActionListener() {
+        loginButton.setText("Fazer Login");
+        loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoLoginActionPerformed(evt);
+                loginButtonActionPerformed(evt);
             }
         });
 
-        botaoCriarConta.setText("Criar Conta");
-        botaoCriarConta.addActionListener(new java.awt.event.ActionListener() {
+        createAccountButton.setText("Criar Conta");
+        createAccountButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoCriarContaActionPerformed(evt);
+                createAccountButtonActionPerformed(evt);
             }
         });
 
@@ -119,14 +119,14 @@ public class LoginFrame extends javax.swing.JFrame {
                         .addComponent(jLabel2))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(94, 94, 94)
-                        .addComponent(botaoLogin)
+                        .addComponent(loginButton)
                         .addGap(18, 18, 18)
-                        .addComponent(botaoCriarConta))
+                        .addComponent(createAccountButton))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(132, 132, 132)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(campoUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                            .addComponent(campoSenha)
+                            .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .addComponent(passwordField)
                             .addComponent(ipField))))
                 .addContainerGap(114, Short.MAX_VALUE))
         );
@@ -138,22 +138,22 @@ public class LoginFrame extends javax.swing.JFrame {
                 .addGap(23, 23, 23)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(campoUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addGap(3, 3, 3)
-                .addComponent(campoSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(botaoLogin)
-                    .addComponent(botaoCriarConta))
+                    .addComponent(loginButton)
+                    .addComponent(createAccountButton))
                 .addContainerGap(110, Short.MAX_VALUE))
         );
 
         keyStroke = KeyStroke.getKeyStroke(ENTER_KEY);
-        Object actionKey = campoSenha.getInputMap(
+        Object actionKey = passwordField.getInputMap(
             JComponent.WHEN_FOCUSED).get(keyStroke);
-        campoSenha.getActionMap().put(actionKey, wrapper);
+        passwordField.getActionMap().put(actionKey, wrapper);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -172,15 +172,15 @@ public class LoginFrame extends javax.swing.JFrame {
     private final Action wrapper = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent ae) {
-            botaoLogin.doClick();
+            loginButton.doClick();
         }
     };
 
 
-    private void botaoLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoLoginActionPerformed
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         MainFrame tp;
-        String username = campoUsuario.getText();
-        String password = campoSenha.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
 
         MyX509KeyManager km = checkUsernameAndPassword(username, password);
 
@@ -200,95 +200,17 @@ public class LoginFrame extends javax.swing.JFrame {
                         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                     } catch (Exception ex) {
                         Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-                        
+                        JOptionPane.showMessageDialog(rootPane, ex.getMessage());
                         System.out.println("ERRO AO CRIAR TELA PRINCIPAL");
                         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                     }
                     //SE NÃO, TENTA RENOVAR O CERTIFICADO
                 } else {
-
-                    //TIRAR ISSO PARA PRODUÇÃO, SÓ ESTÁ AQUI PARA PERMITIR CONEXÃO COM LOCALHOST
-                    //O TLS COMPARA O CN DO CERTIFICADO COM O HOSTNAME O QUAL ESTÁ SE CONECTANDO
-                    //COMO O CN DO CERTIFICADO DO SERVIDOR NÃO É 'LOCALHOST'
-                    //VAI DAR PROBLEMA DE 'MATCHING'
-                    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
-                            new javax.net.ssl.HostnameVerifier() {
-
-                        @Override
-                        public boolean verify(String hostname,
-                                javax.net.ssl.SSLSession sslSession) {
-                            return true;
-                        }
-                    });
-
-                    ClientConfig clientConfig = new ClientConfig();
-                    clientConfig.register(MultiPartFeature.class);
-
-                    SslConfigurator sslConfig = SslConfigurator.newInstance()
-                            .keyStoreFile(SECURITY_DIRECTORY_PATH + username)
-                            .keyPassword(password)
-                            .trustStoreFile(SECURITY_DIRECTORY_PATH + username + "Trust")
-                            .trustStorePassword(password);
-
-                    SSLContext sslContext = sslConfig.createSSLContext();
-                    Client client = ClientBuilder.newBuilder().withConfig(clientConfig)
-                            .sslContext(sslContext).build();
-                    Response response;
-
-                    new DirectKeyStoreHandler().genCertReq(username, password);
-
-                    String serialNumber = null;
-                    try {
-                        serialNumber = km.getCertificateSerialNumber(username);
-                        if (serialNumber.length() == 3) {
-                            serialNumber = "0".concat(serialNumber);
-                        }
-
-                        System.out.println("SERIAL: " + serialNumber);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(rootPane, "Erro ao tentar recuperar o número serial"
-                                + " do seu certificado, para renová-lo. Seu pedido será enviado, mas "
-                                + "será recusado.");
-                        Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    final FileDataBodyPart filePart = new FileDataBodyPart("file",
-                            new File(SECURITY_DIRECTORY_PATH + username + ".csr"));
-                    FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
-                    final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
-                            .field("serial", serialNumber, MediaType.TEXT_PLAIN_TYPE)
-                            .bodyPart(filePart);
-
-                    WebTarget target = client.target("https://localhost:9998/api/app/renewcert");
-                    response = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
-
-                    if (response.getStatus() != 500) {
-                        System.out.println(response.getStatus());
-
-                        writeOwnCert(response, username);
-
-                        try {
-                            formDataMultiPart.close();
-                            multipart.close();
-                            client.close();
-
-                            new DirectKeyStoreHandler().importCert(username, password);
-                            System.out.println("CERTIFICADO IMPORTADO COM SUCESSO");
-                            JOptionPane.showMessageDialog(this, "ATENÇÃO: CERTIFICADO RENOVADO!");
-                            botaoLogin.doClick();
-                        } catch (IOException ex) {
-                            JOptionPane.showMessageDialog(rootPane, "Erro ao tentar importar seu certificado renovado "
-                                    + "para a sua KeyStore. Você pode tentar importá-lo manualmente");
-                            System.out.println("FALHA AO RENOVAR CERTIFICADO");
-                            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }else{
-                        JOptionPane.showMessageDialog(rootPane, "Erro ao renovar seu certificado."
-                                + "Não será possível fazer login até que seu certificado seja renovado.");
-                    }
+                    renewCertificate(km, username, password);
                 }
             } catch (KeyStoreException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Erro ao verificar a válidade do seu certificado.");
+                ex.printStackTrace();
             } catch (KeyManagementException ex) {
                 Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SmackException ex) {
@@ -303,7 +225,89 @@ public class LoginFrame extends javax.swing.JFrame {
                 Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-    }//GEN-LAST:event_botaoLoginActionPerformed
+    }//GEN-LAST:event_loginButtonActionPerformed
+
+    private void renewCertificate(MyX509KeyManager km, String username, String password) {
+        //TIRAR ISSO PARA PRODUÇÃO, SÓ ESTÁ AQUI PARA PERMITIR CONEXÃO COM LOCALHOST
+        //O TLS COMPARA O CN DO CERTIFICADO COM O HOSTNAME O QUAL ESTÁ SE CONECTANDO
+        //COMO O CN DO CERTIFICADO DO SERVIDOR NÃO É 'LOCALHOST'
+        //VAI DAR PROBLEMA DE 'MATCHING'
+        javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+                new javax.net.ssl.HostnameVerifier() {
+
+            @Override
+            public boolean verify(String hostname,
+                    javax.net.ssl.SSLSession sslSession) {
+                return true;
+            }
+        });
+
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(MultiPartFeature.class);
+
+        SslConfigurator sslConfig = SslConfigurator.newInstance()
+                .keyStoreFile(SECURITY_DIRECTORY_PATH + username)
+                .keyPassword(password)
+                .trustStoreFile(SECURITY_DIRECTORY_PATH + username + "Trust")
+                .trustStorePassword(password);
+
+        SSLContext sslContext = sslConfig.createSSLContext();
+        Client client = ClientBuilder.newBuilder().withConfig(clientConfig)
+                .sslContext(sslContext).build();
+        Response response;
+
+        new DirectKeyStoreHandler().genCertReq(username, password);
+
+        String serialNumber = null;
+        try {
+            serialNumber = km.getCertificateSerialNumber(username);
+            if (serialNumber.length() == 3) {
+                serialNumber = "0".concat(serialNumber);
+            }
+
+            System.out.println("SERIAL: " + serialNumber);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro ao tentar recuperar o número serial"
+                    + " do seu certificado, para renová-lo. Seu pedido será enviado, mas "
+                    + "será recusado.");
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        final FileDataBodyPart filePart = new FileDataBodyPart("file",
+                new File(SECURITY_DIRECTORY_PATH + username + ".csr"));
+        FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+        final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
+                .field("serial", serialNumber, MediaType.TEXT_PLAIN_TYPE)
+                .bodyPart(filePart);
+
+        WebTarget target = client.target("https://localhost:9998/api/app/renewcert");
+        response = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
+
+        if (response.getStatus() != 500) {
+            System.out.println(response.getStatus());
+
+            writeOwnCert(response, username);
+
+            try {
+                formDataMultiPart.close();
+                multipart.close();
+                client.close();
+
+                new DirectKeyStoreHandler().importCert(username, password);
+                System.out.println("CERTIFICADO IMPORTADO COM SUCESSO");
+                JOptionPane.showMessageDialog(this, "ATENÇÃO: CERTIFICADO RENOVADO!");
+                loginButton.doClick();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(rootPane, "Erro ao tentar importar seu certificado renovado "
+                        + "para a sua KeyStore. Você pode tentar importá-lo manualmente");
+                System.out.println("FALHA AO RENOVAR CERTIFICADO");
+                Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(rootPane, "Erro ao renovar seu certificado."
+                    + "Não será possível fazer login até que seu certificado seja renovado.");
+        }
+    }
 
     //ESCREVE O CERTIFICADO DO CLIENTE NA PASTA DE SEGURANÇA
     private void writeOwnCert(Response response, String username) {
@@ -338,10 +342,9 @@ public class LoginFrame extends javax.swing.JFrame {
     }
 
 
-    private void botaoCriarContaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoCriarContaActionPerformed
-        AccountCreationFrame tcc = new AccountCreationFrame(ipField.getText());
-        tcc.setVisible(true);
-    }//GEN-LAST:event_botaoCriarContaActionPerformed
+    private void createAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createAccountButtonActionPerformed
+        new AccountCreationFrame(ipField.getText()).setVisible(true);
+    }//GEN-LAST:event_createAccountButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -386,14 +389,14 @@ public class LoginFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton botaoCriarConta;
-    private javax.swing.JButton botaoLogin;
-    private javax.swing.JTextField campoSenha;
-    private javax.swing.JTextField campoUsuario;
+    private javax.swing.JButton createAccountButton;
     private javax.swing.JTextField ipField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton loginButton;
+    private javax.swing.JTextField passwordField;
+    private javax.swing.JTextField usernameField;
     // End of variables declaration//GEN-END:variables
 }

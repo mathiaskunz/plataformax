@@ -7,6 +7,10 @@ package com.plataformax.swingui;
 
 import com.plataformax.configuration.Configuration;
 import com.plataformax.x509managers.DirectKeyStoreHandler;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
 
@@ -24,9 +28,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import org.apache.commons.io.FileUtils;
 
@@ -93,12 +101,12 @@ public final class MainFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jDesktopPane1 = new javax.swing.JDesktopPane();
-        botaoAbrir = new javax.swing.JButton();
+        openButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         listaContato = new javax.swing.JList<>();
         campoAddUser = new javax.swing.JTextField();
-        botaoAddUser = new javax.swing.JButton();
-        botaoRemoverContato = new javax.swing.JButton();
+        addUserButton = new javax.swing.JButton();
+        removeContactButton = new javax.swing.JButton();
 
         javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
         jDesktopPane1.setLayout(jDesktopPane1Layout);
@@ -113,10 +121,10 @@ public final class MainFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        botaoAbrir.setText("Abrir");
-        botaoAbrir.addActionListener(new java.awt.event.ActionListener() {
+        openButton.setText("Abrir");
+        openButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoAbrirActionPerformed(evt);
+                openButtonActionPerformed(evt);
             }
         });
 
@@ -127,17 +135,17 @@ public final class MainFrame extends javax.swing.JFrame {
         }
         jScrollPane3.setViewportView(listaContato);
 
-        botaoAddUser.setText("Adicionar contato");
-        botaoAddUser.addActionListener(new java.awt.event.ActionListener() {
+        addUserButton.setText("Adicionar contato");
+        addUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoAddUserActionPerformed(evt);
+                addUserButtonActionPerformed(evt);
             }
         });
 
-        botaoRemoverContato.setText("Remover contato");
-        botaoRemoverContato.addActionListener(new java.awt.event.ActionListener() {
+        removeContactButton.setText("Remover contato");
+        removeContactButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoRemoverContatoActionPerformed(evt);
+                removeContactButtonActionPerformed(evt);
             }
         });
 
@@ -150,15 +158,15 @@ public final class MainFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(188, 188, 188)
-                        .addComponent(botaoAbrir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(campoAddUser)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(botaoRemoverContato)
+                                .addComponent(removeContactButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(botaoAddUser)))
+                                .addComponent(addUserButton)))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -167,17 +175,17 @@ public final class MainFrame extends javax.swing.JFrame {
                 .addComponent(campoAddUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(botaoAddUser)
-                    .addComponent(botaoRemoverContato))
+                    .addComponent(addUserButton)
+                    .addComponent(removeContactButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(botaoAbrir))
+                .addComponent(openButton))
             .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void botaoAbrirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoAbrirActionPerformed
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
         String contato = listaContato.getSelectedValue();
 
         if (contato != null) {
@@ -197,20 +205,49 @@ public final class MainFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Escolha um contato");
         }
 
-    }//GEN-LAST:event_botaoAbrirActionPerformed
+    }//GEN-LAST:event_openButtonActionPerformed
 
 
-    private void botaoAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoAddUserActionPerformed
-        addFriend(campoAddUser.getText() + "@note-mathias");
-    }//GEN-LAST:event_botaoAddUserActionPerformed
+    private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
+        List<String> clientList = config.searchUser(campoAddUser.getText());
+        
+        JLabel clientListLabel = new JLabel();
+        clientListLabel.setText("Usuário | Nome");
+        clientListLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JPanel userSelectionPanel = new JPanel();
+        userSelectionPanel.setLayout(new BoxLayout(userSelectionPanel, BoxLayout.Y_AXIS));
+        
+        JList clientJList = new JList();
+        DefaultListModel lista = new DefaultListModel();
+        
+        for (String client : clientList) {
+            lista.addElement(client);
+        }
+        
+        clientJList.setModel(lista);
+        clientJList.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        userSelectionPanel.add(clientListLabel);
+        userSelectionPanel.add(clientJList);
+        
+        JOptionPane.showMessageDialog(null, userSelectionPanel, "Clientes Encontrados", 
+                JOptionPane.PLAIN_MESSAGE);
+        
+        System.out.println("SELECTED USER: " + clientJList.getSelectedValue());
+        String selectClient = clientJList.getSelectedValue().toString();
+                
+        System.out.println(selectClient.substring(0, selectClient.indexOf(" |"))+ "@note-mathias");
+        addFriend(selectClient.substring(0, selectClient.indexOf("|")-1)+ "@note-mathias");
+    }//GEN-LAST:event_addUserButtonActionPerformed
 
-    private void botaoRemoverContatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoRemoverContatoActionPerformed
+    private void removeContactButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeContactButtonActionPerformed
         if (listaContato.getSelectedValue() != null) {
             unsubscribe(listaContato.getSelectedValue() + "@note-mathias");
-        }else{
+        } else {
             JOptionPane.showMessageDialog(rootPane, "Escolha um contato");
         }
-    }//GEN-LAST:event_botaoRemoverContatoActionPerformed
+    }//GEN-LAST:event_removeContactButtonActionPerformed
 
     private void listenStanza() {
 
@@ -222,49 +259,57 @@ public final class MainFrame extends javax.swing.JFrame {
                 String alias = stanza.getFrom().substring(0, stanza.getFrom().indexOf("@"));
                 switch (((Presence) stanza).getType()) {
                     case subscribe:
-                        
-                        int aceita = JOptionPane.showConfirmDialog(rootPane, stanza.getFrom() + "Quer lhe adicionar, aceitar?");
-                        if (aceita == JOptionPane.YES_OPTION) {
-
-                            //NÃO ESQUECER DE FAZER O IF PARA VER SE O CERTIFICADO JÁ
-                            //ESTÁ INSTALADO NA TRUSTSTORE!!
-                            Certificate certificate = (Certificate) JivePropertiesManager
-                                    .getProperty(stanza, "certificate");
-
-                            writeRemoteClientCert(certificate, alias);
-                            new DirectKeyStoreHandler().addTrustEntry(username, alias, password);
-
-                            //INFORMA QUE ACEITA A INSCRICAO/PEDIDO DE AMIZADE
+                        if (roster.contains(stanza.getFrom())) {
                             Presence newp = new Presence(Presence.Type.subscribed);
                             newp.setMode(Presence.Mode.available);
                             newp.setPriority(24);
                             newp.setTo(stanza.getFrom());
                             config.getConnection().sendStanza(newp);
+                        } else {
+                            int aceita = JOptionPane.showConfirmDialog(rootPane, stanza.getFrom() + "Quer lhe adicionar, "
+                                    + "aceitar?");
+                            if (aceita == JOptionPane.YES_OPTION) {
 
-                            //ENVIA PEDIDO DE AMIZADE, PARA PODER RECEBER AS INFORMÇÕES TAMBÉM
-                            Presence subscription = new Presence(Presence.Type.subscribe);
-                            subscription.setTo(stanza.getFrom());
+                                //NÃO ESQUECER DE FAZER O IF PARA VER SE O CERTIFICADO JÁ
+                                //ESTÁ INSTALADO NA TRUSTSTORE!!
+                                Certificate certificate = (Certificate) JivePropertiesManager
+                                        .getProperty(stanza, "certificate");
 
-                            try {
-                                certificate = config.getOwnCertificate();
-                            } catch (KeyStoreException ex) {
-                                JOptionPane.showMessageDialog(rootPane, "Não foi possível recuperar seu "
-                                        + "certificado da sua KeyStore. Seu pedido de amizade não será aceito"
-                                        + "pelo cliente: " + stanza.getFrom() + ". Você pode verificar se há"
-                                        + "algum problema com seu de KeyStore e tentar enviar um pedido "
-                                        + "de amizade novamente.");
+                                writeRemoteClientCert(certificate, alias);
+                                new DirectKeyStoreHandler().addTrustEntry(username, alias, password);
+
+                                //INFORMA QUE ACEITA A INSCRICAO/PEDIDO DE AMIZADE
+                                Presence newp = new Presence(Presence.Type.subscribed);
+                                newp.setMode(Presence.Mode.available);
+                                newp.setPriority(24);
+                                newp.setTo(stanza.getFrom());
+                                config.getConnection().sendStanza(newp);
+
+                                //ENVIA PEDIDO DE AMIZADE, PARA PODER RECEBER OS STATUS TAMBÉM
+                                Presence subscription = new Presence(Presence.Type.subscribe);
+                                subscription.setTo(stanza.getFrom());
+
+                                try {
+                                    certificate = config.getOwnCertificate();
+                                } catch (KeyStoreException ex) {
+                                    JOptionPane.showMessageDialog(rootPane, "Não foi possível recuperar seu "
+                                            + "certificado da sua KeyStore. Seu pedido de amizade não será aceito"
+                                            + "pelo cliente: " + stanza.getFrom() + ". Você pode verificar se há "
+                                            + "algum problema com sua KeyStore e tentar enviar um pedido "
+                                            + "de amizade novamente.");
+                                }
+
+                                JivePropertiesManager.addProperty(subscription, "certificate", certificate);
+
+                                config.getConnection().sendStanza(subscription);
+
+                                listContacts();
+
+                            } else if (aceita == JOptionPane.NO_OPTION) {
+                                Presence newp = new Presence(Presence.Type.unsubscribe);
+                                newp.setTo(stanza.getFrom());
+                                config.getConnection().sendStanza(newp);
                             }
-
-                            JivePropertiesManager.addProperty(subscription, "certificate", certificate);
-
-                            config.getConnection().sendStanza(subscription);
-
-                            preencheContatos();
-
-                        } else if (aceita == JOptionPane.NO_OPTION) {
-                            Presence newp = new Presence(Presence.Type.unsubscribe);
-                            newp.setTo(stanza.getFrom());
-                            config.getConnection().sendStanza(newp);
                         }
                         break;
                     case unsubscribe:
@@ -281,7 +326,7 @@ public final class MainFrame extends javax.swing.JFrame {
                         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException ex) {
                             JOptionPane.showMessageDialog(rootPane, "Não foi possível remover o certificado"
                                     + "digital do cliente remoto da sua TrustStore. Isso não implica em "
-                                    + "nenhuma brecha de segurança para você, o certificado somente irá"
+                                    + "nenhuma brecha de segurança para você, o certificado somente irá "
                                     + "ocupar espaço na sua TrustStore. É possível que seu arquivo de "
                                     + "TrustStore tenha sido removido e não foi recriado. Verifique o mesmo.");
                         } catch (IOException ex) {
@@ -295,21 +340,22 @@ public final class MainFrame extends javax.swing.JFrame {
                         } catch (SmackException.NotLoggedInException ex) {
                             JOptionPane.showMessageDialog(rootPane, "Erro ao recarregar a sua lista de "
                                     + "contatos. É possível que você não esteja mais logado no servidor."
-                                    + "Tente fechar e abrir o aplicativo. E entre novamente com seu "
+                                    + " Tente fechar e abrir o aplicativo. E entre novamente com seu "
                                     + "usuário.");
                         }
-                        preencheContatos();
+                        listContacts();
                         break;
                     case available:
-                        preencheContatos();
+                        listContacts();
                         break;
                     default:
                         break;
                 }
-                preencheContatos();
+                listContacts();
             }
         };
-        config.getConnection().addAsyncStanzaListener(sl, sf);
+        config.getConnection()
+                .addAsyncStanzaListener(sl, sf);
     }
 
     private void addFriend(String address) {
@@ -330,7 +376,6 @@ public final class MainFrame extends javax.swing.JFrame {
             /*if (!roster.contains(address)) {
                 roster.createEntry(address, address.substring(0, address.indexOf("@")), null);
             }*/
-
         } catch (NotConnectedException /*| SmackException.NotLoggedInException | SmackException.NoResponseException | XMPPException.XMPPErrorException*/ ex) {
             JOptionPane.showMessageDialog(rootPane, "Não foi possível enviar seu pedido de amizade."
                     + "As possíveis causas para esse problema são:"
@@ -368,17 +413,17 @@ public final class MainFrame extends javax.swing.JFrame {
 
             @Override
             public void entriesAdded(Collection<String> addresses) {
-                preencheContatos();
+                listContacts();
             }
 
             @Override
             public void entriesDeleted(Collection<String> addresses) {
-                preencheContatos();
+                listContacts();
             }
 
             @Override
             public void entriesUpdated(Collection<String> addresses) {
-                preencheContatos();
+                listContacts();
             }
 
             @Override
@@ -390,14 +435,14 @@ public final class MainFrame extends javax.swing.JFrame {
                 }
 
                 System.out.println("Presence changed: " + presence.getFrom() + " " + presence);
-                preencheContatos();
+                listContacts();
             }
         });
 
-        preencheContatos();
+        listContacts();
     }
 
-    public void preencheContatos() {
+    public void listContacts() {
         Set<RosterEntry> set = roster.getEntries();
         DefaultListModel lista = new DefaultListModel();
         Map<String, Integer> presenca = new HashMap<String, Integer>();
@@ -525,12 +570,12 @@ public final class MainFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton botaoAbrir;
-    private javax.swing.JButton botaoAddUser;
-    private javax.swing.JButton botaoRemoverContato;
+    private javax.swing.JButton addUserButton;
     private javax.swing.JTextField campoAddUser;
     private javax.swing.JDesktopPane jDesktopPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JList<String> listaContato;
+    private javax.swing.JButton openButton;
+    private javax.swing.JButton removeContactButton;
     // End of variables declaration//GEN-END:variables
 }
