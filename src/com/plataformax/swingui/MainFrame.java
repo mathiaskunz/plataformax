@@ -41,6 +41,7 @@ import org.apache.commons.io.FileUtils;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.Chat;
 import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.chat.ChatManagerListener;
@@ -210,35 +211,35 @@ public final class MainFrame extends javax.swing.JFrame {
 
     private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
         List<String> clientList = config.searchUser(campoAddUser.getText());
-        
+
         JLabel clientListLabel = new JLabel();
         clientListLabel.setText("Usuário | Nome");
         clientListLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         JPanel userSelectionPanel = new JPanel();
         userSelectionPanel.setLayout(new BoxLayout(userSelectionPanel, BoxLayout.Y_AXIS));
-        
+
         JList clientJList = new JList();
         DefaultListModel lista = new DefaultListModel();
-        
+
         for (String client : clientList) {
             lista.addElement(client);
         }
-        
+
         clientJList.setModel(lista);
         clientJList.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         userSelectionPanel.add(clientListLabel);
         userSelectionPanel.add(clientJList);
-        
-        JOptionPane.showMessageDialog(null, userSelectionPanel, "Clientes Encontrados", 
+
+        JOptionPane.showMessageDialog(null, userSelectionPanel, "Clientes Encontrados",
                 JOptionPane.PLAIN_MESSAGE);
-        
+
         System.out.println("SELECTED USER: " + clientJList.getSelectedValue());
         String selectClient = clientJList.getSelectedValue().toString();
-                
-        System.out.println(selectClient.substring(0, selectClient.indexOf(" |"))+ "@note-mathias");
-        addFriend(selectClient.substring(0, selectClient.indexOf("|")-1)+ "@note-mathias");
+
+        System.out.println(selectClient.substring(0, selectClient.indexOf(" |")) + "@note-mathias");
+        addFriend(selectClient.substring(0, selectClient.indexOf("|") - 1) + "@note-mathias");
     }//GEN-LAST:event_addUserButtonActionPerformed
 
     private void removeContactButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeContactButtonActionPerformed
@@ -260,12 +261,14 @@ public final class MainFrame extends javax.swing.JFrame {
                 switch (((Presence) stanza).getType()) {
                     case subscribe:
                         if (roster.contains(stanza.getFrom())) {
+                            System.out.println("TA CAINDO AQUI");
                             Presence newp = new Presence(Presence.Type.subscribed);
                             newp.setMode(Presence.Mode.available);
                             newp.setPriority(24);
                             newp.setTo(stanza.getFrom());
                             config.getConnection().sendStanza(newp);
                         } else {
+                            System.out.println("OU AQUI");
                             int aceita = JOptionPane.showConfirmDialog(rootPane, stanza.getFrom() + "Quer lhe adicionar, "
                                     + "aceitar?");
                             if (aceita == JOptionPane.YES_OPTION) {
@@ -276,6 +279,17 @@ public final class MainFrame extends javax.swing.JFrame {
                                         .getProperty(stanza, "certificate");
 
                                 writeRemoteClientCert(certificate, alias);
+                                try {
+                                    config.deleteTrustEntry(alias);
+                                } catch (KeyStoreException ex) {
+                                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (NoSuchAlgorithmException ex) {
+                                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (CertificateException ex) {
+                                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                                 new DirectKeyStoreHandler().addTrustEntry(username, alias, password);
 
                                 //INFORMA QUE ACEITA A INSCRICAO/PEDIDO DE AMIZADE
@@ -336,12 +350,17 @@ public final class MainFrame extends javax.swing.JFrame {
                         break;
                     case subscribed:
                         try {
+                            roster.getEntry(stanza.getFrom()).setName(alias);
                             roster.reload();
                         } catch (SmackException.NotLoggedInException ex) {
                             JOptionPane.showMessageDialog(rootPane, "Erro ao recarregar a sua lista de "
                                     + "contatos. É possível que você não esteja mais logado no servidor."
                                     + " Tente fechar e abrir o aplicativo. E entre novamente com seu "
                                     + "usuário.");
+                        } catch (SmackException.NoResponseException ex) {
+                            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (XMPPException.XMPPErrorException ex) {
+                            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         listContacts();
                         break;
@@ -363,8 +382,10 @@ public final class MainFrame extends javax.swing.JFrame {
         //CRIA UM PEDIDO DE SUBSCRIBE
         //RECUPERA O PRÓPRIO CERTIFICADO E O COLOCA EM UMA PROPRIEDADE PARA O ENVIAR
         //AO CLIENTE AO QUAL SE DESEJA ADICIONAR.
+        System.out.println("ADDRESS: " + address);
         try {
             Presence response = new Presence(Presence.Type.subscribe);
+
             response.setTo(address);
 
             Certificate certificate = config.getOwnCertificate();
@@ -450,9 +471,7 @@ public final class MainFrame extends javax.swing.JFrame {
         for (RosterEntry rosterEntry : set) {
             String contato = rosterEntry.getName();
             if (contato != null) {
-                System.out.println("CONTATO: " + contato);
                 lista.addElement(contato);
-
                 if (roster.getPresence(contato + "@note-mathias").isAvailable()) {
                     presenca.put(contato, 1);
                 } else {

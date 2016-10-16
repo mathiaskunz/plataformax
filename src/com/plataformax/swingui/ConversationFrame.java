@@ -64,11 +64,11 @@ import sun.security.x509.X500Name;
 public class ConversationFrame extends javax.swing.JFrame {
 
     private static final String ENTER_KEY = "ENTER";
-    private static final String TRANSFORMATION = "AES/CTR/PKCS5PADDING";
+    private static final String TRANSFORMATION = "AES/CTR/NoPadding";
     
     private KeyStroke keyStroke;
     private Certificate contactCert;
-    private IvParameterSpec IV;
+    private IvParameterSpec counter;
     private BigInteger bytesForIV;
 
     private Configuration config;
@@ -263,30 +263,35 @@ public class ConversationFrame extends javax.swing.JFrame {
     }*/
     
     private void setMessageText(String text) {
-        campoMensagem.setForeground(Color.blue);
+        campoMensagem.setBackground(Color.white);
         campoMensagem.setText(campoMensagem.getText() + "\n" + getContactName() + ": ");
-        this.revalidate();
-        campoMensagem.setForeground(Color.BLACK);
         campoMensagem.setText(campoMensagem.getText() + "\n" + text);
         this.revalidate();
     }
 
     private void setOwnMessageText(String text) {
-        campoMensagem.setForeground(Color.GREEN);
+        campoMensagem.setBackground(Color.white);
         campoMensagem.setText(campoMensagem.getText() + "\nVocê: ");
+        campoMensagem.setText(campoMensagem.getText() + "\n" + text);
         this.revalidate();
-        campoMensagem.setForeground(Color.BLACK);
+    }
+    
+    private void setSystemMessageText (String text) {
+        campoMensagem.setBackground(Color.red);
+        campoMensagem.setText(campoMensagem.getText() + "\nAlerta do sistema: ");
         campoMensagem.setText(campoMensagem.getText() + "\n" + text);
         this.revalidate();
     }
 
     private void setKfromAy() {
         this.kSTS = ay.modPow(x, p);
+        
+        System.out.println("LENGTH: " + kSTS.bitLength());
     }
 
     private void setKfromAx() {
         this.kSTS = ax.modPow(y, p);
-        System.out.println("LENGHT: " + kSTS.bitCount());
+        System.out.println("LENGTH: " + kSTS.bitLength());
     }
 
     private void setSecretKey() {
@@ -297,8 +302,8 @@ public class ConversationFrame extends javax.swing.JFrame {
         this.bytesForIV = new BigInteger(Arrays.copyOfRange(kSTS.toByteArray(), 0, 16));
     }
 
-    private void setIV() {
-        this.IV = new IvParameterSpec(bytesForIV.toByteArray());
+    private void setCounter() {
+        this.counter = new IvParameterSpec(bytesForIV.toByteArray());
     }
 
     public void setFirstMessage() {
@@ -313,7 +318,7 @@ public class ConversationFrame extends javax.swing.JFrame {
         return this.fullContactName.substring(0, this.fullContactName.indexOf("@"));
     }
 
-    private void incrementBytesForIV() {
+    private void incrementBytesForCounter() {
         this.bytesForIV = this.bytesForIV.add(BigInteger.ONE);
         System.out.println("BYTESFORIV: " + bytesForIV);
     }
@@ -372,11 +377,11 @@ public class ConversationFrame extends javax.swing.JFrame {
     private String decryptData(String messageEncrypted) throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 
-        incrementBytesForIV();
-        setIV();
-        //Não é necessário o padding com CTR, mas estou colocando por capricho
+        incrementBytesForCounter();
+        setCounter();
+        
         Cipher dec = Cipher.getInstance(TRANSFORMATION);
-        dec.init(Cipher.DECRYPT_MODE, key, IV);
+        dec.init(Cipher.DECRYPT_MODE, key, counter);
 
         byte[] decodedMessage = Base64.decode(messageEncrypted);
         byte[] decValue = dec.doFinal(decodedMessage);
@@ -391,11 +396,11 @@ public class ConversationFrame extends javax.swing.JFrame {
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException {
 
-        incrementBytesForIV();
-        setIV();
+        incrementBytesForCounter();
+        setCounter();
 
         Cipher enc = Cipher.getInstance(TRANSFORMATION);
-        enc.init(Cipher.ENCRYPT_MODE, key, IV);
+        enc.init(Cipher.ENCRYPT_MODE, key, counter);
 
         String encString = Base64.encodeToString(enc.doFinal(message.getBytes()));
         System.out.println("ENCRYPTED STRING: " + encString);
@@ -413,6 +418,7 @@ public class ConversationFrame extends javax.swing.JFrame {
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             x = new BigInteger(512, random);
             ax = g.modPow(x, p);
+            System.out.println("AX: " + ax.bitLength());
 
         } catch (NoSuchAlgorithmException | InvalidParameterSpecException ex) {
             JOptionPane.showMessageDialog(rootPane, ex.getMessage());
@@ -493,11 +499,12 @@ public class ConversationFrame extends javax.swing.JFrame {
                     .getProperty(receivedMessage, "ax").toString());
 
             setKfromAx();
+            setSecretKey();
+            setBytesForIV();
+            
             String concatAxAy = ax.toString().concat(ay.toString());
 
             String signedConcat = SignData(concatAxAy);
-            setSecretKey();
-            setBytesForIV();
 
             String encrypedSignedConcat = encryptData(signedConcat);
 
@@ -523,12 +530,11 @@ public class ConversationFrame extends javax.swing.JFrame {
         ay = new BigInteger(JivePropertiesManager
                 .getProperty(receivedMessage, "ay").toString());
         setKfromAy();
-
-        String encryptedData = JivePropertiesManager
-                .getProperty(receivedMessage, "EncrypedSignedConcat").toString();
-
         setSecretKey();
         setBytesForIV();
+        
+        String encryptedData = JivePropertiesManager
+                .getProperty(receivedMessage, "EncrypedSignedConcat").toString();
 
         String decryptedData;
 
@@ -562,13 +568,13 @@ public class ConversationFrame extends javax.swing.JFrame {
                     sendMessage(newMessage);
                 } else {
                     firstMessage = true;
-                    System.out.println("Conversação cancelada! Assinatura inválida!");
+                    setSystemMessageText("Assinatura inválida! O processo de negociação de chaves não será completado.");
                     JivePropertiesManager.addProperty(newMessage, "KeyExchangeState", -1);
                     sendMessage(newMessage);
                 }
             } else {
                 firstMessage = true;
-                System.out.println("Conversação cancelada! Certificado digital inválido: "
+                setSystemMessageText("Conversação cancelada! Certificado digital inválido: "
                         + "Certificado vencido. Comunicação só será aceita com certificado válido");
                 JivePropertiesManager.addProperty(newMessage, "KeyExchangeState", -2);
                 sendMessage(newMessage);
@@ -614,11 +620,11 @@ public class ConversationFrame extends javax.swing.JFrame {
             if (checkContactCertValidity(getContactName())) {
 
                 if (!verifySign(decryptedConcat, concatAxAy)) {
-                    System.out.println("Conversação cancelada! Assinatura inválida!");
+                    setSystemMessageText("Assinatura inválida! O processo de negociação não será completado");
                     JivePropertiesManager.addProperty(newMessage, "KeyExchangeState", -1);
                     sendMessage(newMessage);
                 } else {
-                    System.out.println("FECHOU NEGOCIAÇÃO");
+                    System.out.println("NEGOCIAÇÃO FINALIZADA");
                     setMessageText(firstReceivedMessage);
 
                     newMessage.setBody(firstReceivedMessage);
@@ -627,7 +633,7 @@ public class ConversationFrame extends javax.swing.JFrame {
                 }
             } else {
                 config.deleteTrustEntry(getContactName());
-                System.out.println("Conversação cancelada! Certificado digital inválido: "
+                setSystemMessageText("Conversação cancelada! Certificado digital inválido: "
                         + "Certificado vencido. Comunicação só será aceita com certificado válido");
                 JivePropertiesManager.addProperty(newMessage, "KeyExchangeState", -2);
                 sendMessage(newMessage);
@@ -656,12 +662,12 @@ public class ConversationFrame extends javax.swing.JFrame {
             switch (JivePropertiesManager
                     .getProperty(receivedMessage, "KeyExchangeState").toString()) {
                 case "-1":
-                    setMessageText("Processo de negociação de chaves não completado."
+                    setSystemMessageText("Processo de negociação de chaves não completado."
                             + "Conversação cancelada. Motivo: Assinatura inválida.");
                     firstMessage = true;
                     break;
                 case "-2":
-                    setMessageText("Processo de negociaçãi de chaves não completado."
+                    setSystemMessageText("Processo de negociaçãi de chaves não completado."
                             + "Conversação cancelada. Motivo: Certificado digital inválido.");
                     firstMessage = true;
                     break;
@@ -683,8 +689,9 @@ public class ConversationFrame extends javax.swing.JFrame {
                 if (verifySign(signature, receivedMessage.getBody())) {
                     setMessageText(decryptData(receivedMessage.getBody()));
                 } else {
-                    //VER O QUE FAZER COM A CONVERSA QUANDO A ASSINATURA DIGITAL É INVÁLIDA.
-                    setMessageText("Assinatura inválida! Mensagem cancelada!");
+                    setSystemMessageText("Assinatura inválida! Assinatura inválida! A mensagem enviada pelo contato não será"
+                            + "decriptada e apresentada. Caso essa mensagem venha à aparecer com frequência, "
+                            + "aconselha-se a finalizar a conversa com esse contato.");
                 }
             } catch (InvalidKeyException ex) {
                 JOptionPane.showMessageDialog(rootPane, ex.getMessage());
@@ -694,8 +701,8 @@ public class ConversationFrame extends javax.swing.JFrame {
                 Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            //VER O QUE FAZER SE CHEGAR UMA MENSAGEM SEM ASSINATURA.
-            setMessageText(receivedMessage.getBody());
+            setSystemMessageText("O contato desta conversa enviou uma mensagem sem assinatura.\n"
+                    + "Nenhuma mensagem enviada sem assinatura será decriptada e apresentada.");
         }
 
     }
@@ -720,7 +727,7 @@ public class ConversationFrame extends javax.swing.JFrame {
 
         ParametersFrame tp = new ParametersFrame(p.toString(), g.toString(),
                 xy, kSTS.toString(), Base64.encodeToString(key.getEncoded()),
-                Base64.encodeToString(IV.getIV()));
+                Base64.encodeToString(counter.getIV()));
         tp.setVisible(true);
     }//GEN-LAST:event_configurationParameterButtonActionPerformed
 

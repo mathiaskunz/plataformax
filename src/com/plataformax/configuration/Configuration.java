@@ -110,7 +110,7 @@ public final class Configuration {
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setCompressionEnabled(false)
                 .allowEmptyOrNullUsernames()
-                .setConnectTimeout(45000)
+                .setConnectTimeout(60000)
                 .build();
 
         this.connection = new XMPPTCPConnection(config);

@@ -7,17 +7,21 @@ package com.plataformax.swingui;
 
 import com.plataformax.configuration.Configuration;
 import com.plataformax.x509managers.DirectKeyStoreHandler;
+import com.plataformax.x509managers.MyX509KeyManager;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
+import javax.swing.JOptionPane;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
@@ -26,6 +30,8 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPException;
 
 /**
  *
@@ -35,13 +41,13 @@ public class PasswordFrame extends javax.swing.JFrame {
 
     private final int REQUEST_SUCCESSS = 1;
     private static final String SECURITY_DIRECTORY_PATH = "security/";
-    private static final String CA_CERTREQ_ADDRESS = "https://localhost:9998/api/app/csr";
-    private static final String CA_DOWNCERT_ADDRESS = "https://localhost:9998/api/app/down/";
-    private static final String CA_DOWNCACERT_ADDRESS = "https://localhost:9998/api/app/downcacert";
-    
     private String username;
     private Configuration config;
-
+    private String ip;
+    
+    private String CA_CERTREQ_ADDRESS = "https://"+ip+":9998/api/app/csr";
+    private String CA_DOWNCERT_ADDRESS = "https://"+ip+":9998/api/app/down/";
+    private String CA_DOWNCACERT_ADDRESS = "https://"+ip+":9998/api/app/downcacert";
     /**
      * Creates new form TelaSenha
      *
@@ -53,7 +59,11 @@ public class PasswordFrame extends javax.swing.JFrame {
 
     public PasswordFrame(String username, String ip) throws Exception {
         this.username = username;
+        this.ip = ip;
         this.config = new Configuration(ip);
+        this.CA_CERTREQ_ADDRESS = "https://"+ip+":9998/api/app/csr";
+        this.CA_DOWNCERT_ADDRESS = "https://"+ip+":9998/api/app/down/";
+        this.CA_DOWNCACERT_ADDRESS = "https://"+ip+":9998/api/app/downcacert";
         initComponents();
     }
 
@@ -153,7 +163,7 @@ public class PasswordFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void passwordFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordFieldActionPerformed
-
+        continueButton.doClick();
     }//GEN-LAST:event_passwordFieldActionPerformed
 
     private void continueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continueButtonActionPerformed
@@ -171,8 +181,7 @@ public class PasswordFrame extends javax.swing.JFrame {
                 return true;
             }
         });
-        
-        
+                
         String password = passwordField.getText();
 
         ClientConfig clientConfig = new ClientConfig();
@@ -207,7 +216,6 @@ public class PasswordFrame extends javax.swing.JFrame {
         if (response.getStatus() == 200 && answer == REQUEST_SUCCESSS) {
 
             try {
-                System.out.println("ENTROU");
                 target = client.target(CA_DOWNCERT_ADDRESS + username);
 
                 invocationBuilder
@@ -240,17 +248,96 @@ public class PasswordFrame extends javax.swing.JFrame {
 
                 config.registerUser(username, passwordField.getText());
                 System.out.println("USUÁRIO CRIADO COM SUCESSO");
+                JOptionPane.showMessageDialog(rootPane, "Usuário criado com sucesso.");
                 this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+                
             } catch (IOException ex) {
                 Logger.getLogger(AccountCreationFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (Exception ex) {
+            } catch (SmackException.NoResponseException | XMPPException.XMPPErrorException 
+                    | SmackException.NotConnectedException | NoSuchAlgorithmException ex) {
+                
+                if (cancelClientRegister(username, password)) {
+                    JOptionPane.showMessageDialog(rootPane, "Não foi possível criar seu usuário. O processo foi cancelado.\n"
+                        + "Tentar novamente mais tarde.");
+                }else{
+                    JOptionPane.showMessageDialog(rootPane, "Não foi possível criar seu usuário. O processo foi cancelado, "
+                            + "mas seu certificado não foi revogado, assim é necessário registrar com outro usuário.\n"
+                        + "Tentar novamente mais tarde.");
+                }
+                
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                 Logger.getLogger(PasswordFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            } 
         } else {
             System.out.println("FALHA AO GERAR CERTIFICADO.");
         }
     }//GEN-LAST:event_continueButtonActionPerformed
 
+    
+    private boolean cancelClientRegister(String username, String password){
+        //TIRAR ISSO PARA PRODUÇÃO, SÓ ESTÁ AQUI PARA PERMITIR CONEXÃO COM LOCALHOST
+        //O TLS COMPARA O CN DO CERTIFICADO COM O HOSTNAME O QUAL ESTÁ SE CONECTANDO
+        //COMO O CN DO CERTIFICADO DO SERVIDOR NÃO É 'LOCALHOST'
+        //VAI DAR PROBLEMA DE 'MATCHING'
+        javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+                new javax.net.ssl.HostnameVerifier() {
+
+            @Override
+            public boolean verify(String hostname,
+                    javax.net.ssl.SSLSession sslSession) {
+                return true;
+            }
+        });
+
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(MultiPartFeature.class);
+
+        SslConfigurator sslConfig = SslConfigurator.newInstance()
+                .keyStoreFile(SECURITY_DIRECTORY_PATH + username)
+                .keyPassword(password)
+                .trustStoreFile(SECURITY_DIRECTORY_PATH + username + "Trust")
+                .trustStorePassword(password);
+
+        SSLContext sslContext = sslConfig.createSSLContext();
+        Client client = ClientBuilder.newBuilder().withConfig(clientConfig)
+                .sslContext(sslContext).build();
+        Response response;
+        
+        String serialNumber = null;
+        try {
+            serialNumber = new MyX509KeyManager(username, password).getCertificateSerialNumber(username);
+            if (serialNumber.length() == 3) {
+                serialNumber = "0".concat(serialNumber);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        
+        Form form = new Form();
+        form.param("serial", serialNumber);
+        
+        WebTarget target = client.target("https://localhost:9998/api/app/cancelclientregister");
+        response = target.request().post(Entity.entity(form, MediaType.TEXT_PLAIN_TYPE));
+        
+        if (response.readEntity(boolean.class) && deleteClientKeyAndTrustStoreFiles(username)) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    private boolean deleteClientKeyAndTrustStoreFiles(String username){
+        try{
+            File fileToDelete = new File (SECURITY_DIRECTORY_PATH + username);
+            fileToDelete.delete();
+            return true;
+        }catch (Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
+    
     private void writeOwnCert(Response response) {
         String certFilePath = SECURITY_DIRECTORY_PATH + username + ".cer";
 

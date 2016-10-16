@@ -29,8 +29,8 @@ public class AccountCreationFrame extends javax.swing.JFrame {
 
     private static final int REQUEST_SUCCESSS = 1;
     private final String SECURITY_DIRECTORY_PATH = "security/";
-    private final String AC_WEB_ADDRESS = "https://localhost:9998/api/app/name/";
     private String ip;
+    private String AC_WEB_ADDRESS = "https://"+ip+":9998/api/app/name/";
 
     /**
      * Creates new form TelaCriarConta
@@ -38,6 +38,7 @@ public class AccountCreationFrame extends javax.swing.JFrame {
     public AccountCreationFrame(String ip) {
         initComponents();
         this.ip = ip;
+        this.AC_WEB_ADDRESS = "https://"+ip+":9998/api/app/name/";
     }
 
     private AccountCreationFrame() {
