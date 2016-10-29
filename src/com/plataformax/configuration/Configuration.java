@@ -19,9 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
@@ -100,7 +98,7 @@ public final class Configuration {
     private void doConnection() throws KeyManagementException, SmackException, IOException, XMPPException {
 
         ctx.init(myKMs, myTMs, null);
-        System.out.println("CHEGOU AQUI");
+        
         XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()
                 .setServiceName("note-mathias")
                 .setHost(ip)
@@ -156,6 +154,11 @@ public final class Configuration {
     }
 
     public PrivateKey getPrivateKey() throws Exception {
+        //ATUALMENTE ESTOU TENDO QUE COLOCAR ESSE "1.0." NA FRENTE DO NOME
+        //PORQUE, POR ALGUM MOTIVO, O METODO DA CLASSE MYKEY...
+        //SÓ ACHA O ALIAS SE TIVER ESSES NUMEROS NA FRENTE
+        //PODE SER ALGO RELACIONADO A VERSÃO DE ALGUMA COISA, ASSIM PODE SER QUE VENHA A DAR PROBLEMA
+        //NO FUTURO, TENTAR DESCOBRIR A CAUSA DISSO
         return this.myKM.getPrivateKey("1.0." + this.username);
     }
 

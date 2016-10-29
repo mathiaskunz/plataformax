@@ -8,10 +8,18 @@ package com.plataformax.swingui;
 import com.plataformax.configuration.Configuration;
 import com.plataformax.x509managers.DirectKeyStoreHandler;
 import com.plataformax.x509managers.MyX509KeyManager;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
@@ -273,6 +281,17 @@ public class PasswordFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_continueButtonActionPerformed
 
+    private String signData(String messageToSign, PrivateKey pk) throws NoSuchAlgorithmException,
+            InvalidKeyException, SignatureException, Exception {
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        
+        sig.initSign(pk);
+        sig.update(messageToSign.getBytes());
+        byte[] sign = sig.sign();
+        String signatureText = Base64.encode(sign);
+
+        return signatureText;
+    }
     
     private boolean cancelClientRegister(String username, String password){
         //TIRAR ISSO PARA PRODUÇÃO, SÓ ESTÁ AQUI PARA PERMITIR CONEXÃO COM LOCALHOST
@@ -303,28 +322,38 @@ public class PasswordFrame extends javax.swing.JFrame {
                 .sslContext(sslContext).build();
         Response response;
         
-        String serialNumber = null;
+        String serialNumber;
+        MyX509KeyManager km;
+        String cert;
+        String signature;
+        
         try {
             serialNumber = new MyX509KeyManager(username, password).getCertificateSerialNumber(username);
             if (serialNumber.length() == 3) {
                 serialNumber = "0".concat(serialNumber);
             }
-        } catch (Exception ex) {
+            km = new MyX509KeyManager(username, password);
+            cert = Base64.encode(km.getCertificate(username).getEncoded());
+            signature = signData(serialNumber, km.getPrivateKey("1.0."+username));
+            
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException 
+                | CertificateException | UnrecoverableKeyException | SignatureException ex) {
             Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (Exception ex) {
+            Logger.getLogger(PasswordFrame.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
         
         Form form = new Form();
         form.param("serial", serialNumber);
+        form.param("signature", signature);
+        form.param("certificate", cert);
         
         WebTarget target = client.target("https://localhost:9998/api/app/cancelclientregister");
         response = target.request().post(Entity.entity(form, MediaType.TEXT_PLAIN_TYPE));
         
-        if (response.readEntity(boolean.class) && deleteClientKeyAndTrustStoreFiles(username)) {
-            return true;
-        }else{
-            return false;
-        }
+        return response.readEntity(boolean.class) && deleteClientKeyAndTrustStoreFiles(username);
     }
     
     private boolean deleteClientKeyAndTrustStoreFiles(String username){

@@ -8,13 +8,20 @@ package com.plataformax.swingui;
 import com.plataformax.configuration.Configuration;
 import com.plataformax.x509managers.MyX509KeyManager;
 import com.plataformax.x509managers.DirectKeyStoreHandler;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
@@ -227,7 +234,19 @@ public class LoginFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_loginButtonActionPerformed
 
-    private void renewCertificate(MyX509KeyManager km, String username, String password) {
+    private String signData(String messageToSign, PrivateKey pk) throws NoSuchAlgorithmException,
+            InvalidKeyException, SignatureException, Exception {
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        
+        sig.initSign(pk);
+        sig.update(messageToSign.getBytes());
+        byte[] sign = sig.sign();
+        String signatureText = Base64.encode(sign);
+
+        return signatureText;
+    }
+    
+    private void renewCertificate(MyX509KeyManager km, String username, String password) throws KeyStoreException, CertificateEncodingException {
         //TIRAR ISSO PARA PRODUÇÃO, SÓ ESTÁ AQUI PARA PERMITIR CONEXÃO COM LOCALHOST
         //O TLS COMPARA O CN DO CERTIFICADO COM O HOSTNAME O QUAL ESTÁ SE CONECTANDO
         //COMO O CN DO CERTIFICADO DO SERVIDOR NÃO É 'LOCALHOST'
@@ -259,12 +278,13 @@ public class LoginFrame extends javax.swing.JFrame {
         new DirectKeyStoreHandler().genCertReq(username, password);
 
         String serialNumber = null;
+        String signature = null;
         try {
             serialNumber = km.getCertificateSerialNumber(username);
             if (serialNumber.length() == 3) {
                 serialNumber = "0".concat(serialNumber);
             }
-
+            signature = signData(serialNumber, km.getPrivateKey("1.0."+username));
             System.out.println("SERIAL: " + serialNumber);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(rootPane, "Erro ao tentar recuperar o número serial"
@@ -273,16 +293,21 @@ public class LoginFrame extends javax.swing.JFrame {
             Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        final FileDataBodyPart filePart = new FileDataBodyPart("file",
+        final FileDataBodyPart requestFile = new FileDataBodyPart("file",
                 new File(SECURITY_DIRECTORY_PATH + username + ".csr"));
         FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+        
+        String cert = Base64.encode(km.getCertificate(username).getEncoded());
+        
         final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
                 .field("serial", serialNumber, MediaType.TEXT_PLAIN_TYPE)
-                .bodyPart(filePart);
+                .field("signature", signature, MediaType.TEXT_PLAIN_TYPE)
+                .field("certificate", cert, MediaType.TEXT_PLAIN_TYPE)
+                .bodyPart(requestFile);
 
         WebTarget target = client.target("https://localhost:9998/api/app/renewcert");
         response = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
-
+        
         if (response.getStatus() != 500) {
             System.out.println(response.getStatus());
 

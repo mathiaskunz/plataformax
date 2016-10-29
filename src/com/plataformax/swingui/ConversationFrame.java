@@ -119,37 +119,33 @@ public class ConversationFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        campoMensagem = new javax.swing.JTextArea();
+        MessageField = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
-        campoDigitarMensagem = new javax.swing.JTextArea();
-        botaoEnviar = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        campoMensagem2 = new javax.swing.JTextPane();
+        messageWriterField = new javax.swing.JTextArea();
+        sendButton = new javax.swing.JButton();
         configurationParameterButton = new javax.swing.JButton();
         showCertificateButton = new javax.swing.JButton();
 
         setTitle(fullContactName);
 
-        campoMensagem.setColumns(20);
-        campoMensagem.setRows(5);
-        jScrollPane1.setViewportView(campoMensagem);
+        MessageField.setColumns(20);
+        MessageField.setRows(5);
+        jScrollPane1.setViewportView(MessageField);
 
-        campoDigitarMensagem.setColumns(20);
-        campoDigitarMensagem.setRows(5);
-        jScrollPane2.setViewportView(campoDigitarMensagem);
+        messageWriterField.setColumns(20);
+        messageWriterField.setRows(5);
+        jScrollPane2.setViewportView(messageWriterField);
         keyStroke = KeyStroke.getKeyStroke(ENTER_KEY);
-        Object actionKey = campoDigitarMensagem.getInputMap(
+        Object actionKey = messageWriterField.getInputMap(
             JComponent.WHEN_FOCUSED).get(keyStroke);
-        campoDigitarMensagem.getActionMap().put(actionKey, wrapper);
+        messageWriterField.getActionMap().put(actionKey, wrapper);
 
-        botaoEnviar.setText("Enviar");
-        botaoEnviar.addActionListener(new java.awt.event.ActionListener() {
+        sendButton.setText("Enviar");
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botaoEnviarActionPerformed(evt);
+                sendButtonActionPerformed(evt);
             }
         });
-
-        jScrollPane3.setViewportView(campoMensagem2);
 
         configurationParameterButton.setText("Parametros de configuração");
         configurationParameterButton.addActionListener(new java.awt.event.ActionListener() {
@@ -176,20 +172,17 @@ public class ConversationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showCertificateButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(botaoEnviar))
-            .addComponent(jScrollPane3)
+                .addComponent(sendButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(botaoEnviar)
+                    .addComponent(sendButton)
                     .addComponent(configurationParameterButton)
                     .addComponent(showCertificateButton)))
         );
@@ -200,7 +193,7 @@ public class ConversationFrame extends javax.swing.JFrame {
     private final Action wrapper = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent ae) {
-            botaoEnviar.doClick();
+            sendButton.doClick();
         }
     };
 
@@ -212,80 +205,30 @@ public class ConversationFrame extends javax.swing.JFrame {
         //MAS É BOM VERIFICAR COMO UMA CAMADA EXTRA DE PROTEÇÃO E TALVEZ AJUDE A POUPAR TRABALHO
         return config.checkContactCertValidity(contactAlias);
     }
-
-    /*private void setMessageText(String text) {
-        
-        StyledDocument document = campoMensagem2.getStyledDocument();
-        
-        Style style = campoMensagem2.addStyle("contactName", null);
-
-        StyleConstants.setForeground(style, Color.BLUE);
-        
-        try {
-            document.insertString(document.getLength(), "\n" +getContactName() + ": ", style);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        StyleConstants.setForeground(style, Color.BLACK);
-        
-        try {
-            document.insertString(document.getLength(), text, style);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        this.revalidate();
-    }
-    
-    private void setOwnMessageText(String text){
-        StyledDocument document = campoMensagem2.getStyledDocument();
-        
-        Style style = campoMensagem2.addStyle("username", null);
-
-        StyleConstants.setForeground(style, Color.GREEN);
-        
-        try {
-            document.insertString(document.getLength(), "\n" + user + ": ", style);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        StyleConstants.setForeground(style, Color.BLACK);
-        
-        try {
-            document.insertString(document.getLength(), text, style);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ConversationFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        this.revalidate();
-    }*/
     
     private void setMessageText(String text) {
-        campoMensagem.setBackground(Color.white);
-        campoMensagem.setText(campoMensagem.getText() + "\n" + getContactName() + ": ");
-        campoMensagem.setText(campoMensagem.getText() + "\n" + text);
+        MessageField.setBackground(Color.white);
+        MessageField.setText(MessageField.getText() + "\n" + getContactName() + ": ");
+        MessageField.setText(MessageField.getText() + "\n" + text);
         this.revalidate();
     }
 
     private void setOwnMessageText(String text) {
-        campoMensagem.setBackground(Color.white);
-        campoMensagem.setText(campoMensagem.getText() + "\nVocê: ");
-        campoMensagem.setText(campoMensagem.getText() + "\n" + text);
+        MessageField.setBackground(Color.white);
+        MessageField.setText(MessageField.getText() + "\nVocê: ");
+        MessageField.setText(MessageField.getText() + "\n" + text);
         this.revalidate();
     }
     
     private void setSystemMessageText (String text) {
-        campoMensagem.setBackground(Color.red);
-        campoMensagem.setText(campoMensagem.getText() + "\nAlerta do sistema: ");
-        campoMensagem.setText(campoMensagem.getText() + "\n" + text);
+        MessageField.setBackground(Color.red);
+        MessageField.setText(MessageField.getText() + "\nAlerta do sistema: ");
+        MessageField.setText(MessageField.getText() + "\n" + text);
         this.revalidate();
     }
 
     private void setKfromAy() {
         this.kSTS = ay.modPow(x, p);
-        
         System.out.println("LENGTH: " + kSTS.bitLength());
     }
 
@@ -347,17 +290,12 @@ public class ConversationFrame extends javax.swing.JFrame {
     private String SignData(String messageToSign) throws NoSuchAlgorithmException,
             InvalidKeyException, SignatureException, Exception {
         Signature sig = Signature.getInstance("SHA256withRSA");
-
-        //ATUALMENTE ESTOU TENDO QUE COLOCAR ESSE "1.0." NA FRENTE DO NOME
-        //PORQUE, POR ALGUM MOTIVO, O METODO DA CLASSE MYKEY...
-        //SÓ ACHA O ALIAS SE TIVER ESSES NUMEROS NA FRENTE
-        //PODE SER ALGO RELACIONADO A VERSÃO DE ALGUMA COISA, ASSIM PODE SER QUE VENHA A DAR PROBLEMA
-        //NO FUTURO, TENTAR DESCOBRIR A CAUSA DISSO
+        
         sig.initSign(config.getPrivateKey());
         sig.update(messageToSign.getBytes());
         byte[] signature = sig.sign();
         String encodedSignature = Base64.encodeToString(signature);
-
+        
         return encodedSignature;
     }
 
@@ -626,10 +564,6 @@ public class ConversationFrame extends javax.swing.JFrame {
                 } else {
                     System.out.println("NEGOCIAÇÃO FINALIZADA");
                     setMessageText(firstReceivedMessage);
-
-                    newMessage.setBody(firstReceivedMessage);
-
-                    sendMessage(newMessage);
                 }
             } else {
                 config.deleteTrustEntry(getContactName());
@@ -707,14 +641,14 @@ public class ConversationFrame extends javax.swing.JFrame {
 
     }
 
-    private void botaoEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botaoEnviarActionPerformed
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         //ChatManager chatmanager = ChatManager.getInstanceFor(config.getConnection());
 
-        sendMessage(campoDigitarMensagem.getText(), createChat(config.getChatManager()));
+        sendMessage(messageWriterField.getText(), createChat(config.getChatManager()));
 
-        campoDigitarMensagem.setText("");
-        campoDigitarMensagem.revalidate();
-    }//GEN-LAST:event_botaoEnviarActionPerformed
+        messageWriterField.setText("");
+        messageWriterField.revalidate();
+    }//GEN-LAST:event_sendButtonActionPerformed
 
     private void configurationParameterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationParameterButtonActionPerformed
         String xy;
@@ -786,18 +720,6 @@ public class ConversationFrame extends javax.swing.JFrame {
     }
 
     private String hexify (byte bytes[]) {
-
-        /*char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', 
-                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
-        StringBuffer buf = new StringBuffer(bytes.length * 2);
-
-        for (int i = 0; i < bytes.length; ++i) {
-            buf.append(hexDigits[(bytes[i] & 0xf0) >> 4]);
-            buf.append(hexDigits[bytes[i] & 0x0f]);
-        }
-
-        return buf.toString();*/
         
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
@@ -855,14 +777,12 @@ public class ConversationFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton botaoEnviar;
-    private javax.swing.JTextArea campoDigitarMensagem;
-    private javax.swing.JTextArea campoMensagem;
-    private javax.swing.JTextPane campoMensagem2;
+    private javax.swing.JTextArea MessageField;
     private javax.swing.JButton configurationParameterButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTextArea messageWriterField;
+    private javax.swing.JButton sendButton;
     private javax.swing.JButton showCertificateButton;
     // End of variables declaration//GEN-END:variables
 }
